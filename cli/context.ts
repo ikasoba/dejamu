@@ -19,6 +19,7 @@ export const getContext = async (config: Config) => {
     bundle: true,
     splitting: true,
     treeShaking: true,
+    minify: true,
     platform: "browser",
     jsx: "automatic",
     jsxImportSource: "npm:preact",
