@@ -10,7 +10,7 @@ Small Static Site Generator for Deno.
 
 # Initialize the site
 ```sh
-deno run -rA https://esm.sh/gh/ikasoba/dejamu/scripts/init.ts
+echo "(await import('https://esm.sh/gh/ikasoba/dejamu/scripts/init.ts')).main();" | deno run -rA -
 ```
 
 # Build the site

@@ -6,8 +6,8 @@ export async function main() {
     lock: false,
     tasks: {
       dejamu: `echo "import 'dejamu/cli/cli.ts';" | deno run -A -`,
-      build: "deno tasks dejamu build",
-      serve: "deno tasks dejamu serve",
+      build: "deno task dejamu build",
+      serve: "deno task dejamu serve",
     },
     imports: {
       "dejamu/": `https://esm.sh/gh/ikasoba/dejamu@${pkg.version}/`,
