@@ -1,0 +1,17 @@
+h1, h2, h3 {
+  border-left: 0.5rem solid gray;
+  padding-left: 0.25rem;
+}
+
+pre > code {
+  background-color: lightslategray;
+  color: white;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  display: block;
+}
+
+footer {
+  display: flex;
+  gap: 0.5rem;
+}
