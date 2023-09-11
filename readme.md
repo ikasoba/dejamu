@@ -15,10 +15,10 @@ deno run -rA https://raw.githubusercontent.com/ikasoba/dejamu/main/scripts/init.
 
 # Build the site
 ```sh
-deno tasks build
+deno task build
 ```
 
 # Start the local server
 ```sh
-deno tasks serve
+deno task serve
 ```
