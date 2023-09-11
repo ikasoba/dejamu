@@ -11,7 +11,7 @@ export async function main() {
     },
     imports: {
       "dejamu/":
-        `https://raw.githubusercontent.com/ikasoba/dejamu/main/scripts/init.ts/${pkg.version}/`,
+        `https://raw.githubusercontent.com/ikasoba/dejamu/${pkg.version}/`,
     },
     compilerOptions: {
       jsx: "react-jsx",
