@@ -60,6 +60,4 @@ app.command("init", "Initialize a new project in the current directory.")
     initProject();
   });
 
-if (import.meta.main) {
-  app.parse();
-}
+app.parse();

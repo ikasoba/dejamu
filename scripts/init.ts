@@ -1,10 +1,16 @@
 import { Config } from "../cli/Config.ts";
+import pkg from "../depm.json" assert { type: "json" };
 
 export async function main() {
   const denoFile = {
     lock: false,
+    tasks: {
+      dejamu: `echo "import 'dejamu/cli/cli.ts';" | deno run -A -`,
+      build: "deno tasks dejamu build",
+      serve: "deno tasks dejamu serve",
+    },
     imports: {
-      "dejamu/": "https://esm.sh/gh/ikasoba/dejamu@0.1.0/",
+      "dejamu/": `https://esm.sh/gh/ikasoba/dejamu@${pkg.version}/`,
     },
     compilerOptions: {
       jsx: "react-jsx",
