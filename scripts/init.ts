@@ -10,7 +10,8 @@ export async function main() {
       serve: "deno task dejamu serve",
     },
     imports: {
-      "dejamu/": `https://esm.sh/gh/ikasoba/dejamu@${pkg.version}/`,
+      "dejamu/":
+        `https://raw.githubusercontent.com/ikasoba/dejamu/main/scripts/init.ts/${pkg.version}/`,
     },
     compilerOptions: {
       jsx: "react-jsx",

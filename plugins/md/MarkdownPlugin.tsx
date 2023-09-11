@@ -78,6 +78,7 @@ export const MarkdownPlugin = (layoutDirectory: string): Plugin => {
           </html>,
         );
 
+        await Deno.mkdir(path.dirname(htmlFilePath), { recursive: true });
         await Deno.writeTextFile(htmlFilePath, html);
 
         return {
