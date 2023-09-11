@@ -32,20 +32,22 @@ export const PreactPlugin = (): Plugin => {
         resetHeadChildren();
         const renderedPage = render(<Page />);
 
-        const html = render(
-          <html>
-            <head>
-              <meta charSet="utf-8" />
-              <script
-                src={jsFilePath}
-                defer
-                type="module"
-              />
-              {...getHeadChildren()}
-            </head>
-            <body dangerouslySetInnerHTML={{ __html: renderedPage }} />
-          </html>,
-        );
+        const html = `<!doctype html>${
+          render(
+            <html>
+              <head>
+                <meta charSet="utf-8" />
+                <script
+                  src={jsFilePath}
+                  defer
+                  type="module"
+                />
+                {...getHeadChildren()}
+              </head>
+              <body dangerouslySetInnerHTML={{ __html: renderedPage }} />
+            </html>,
+          )
+        }`;
 
         await Deno.mkdir(path.dirname(htmlFilePath), { recursive: true });
         await Deno.writeTextFile(htmlFilePath, html);
