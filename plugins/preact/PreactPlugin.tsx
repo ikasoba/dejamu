@@ -3,6 +3,8 @@ import { FunctionComponent } from "npm:preact/";
 import { render } from "npm:preact-render-to-string/";
 import * as path from "../../deps/path.ts";
 import { getHeadChildren, resetHeadChildren } from "../Head.tsx";
+import { getAssets } from "../asset.ts";
+import { esbuild } from "https://deno.land/x/esbuild_deno_loader@0.8.1/deps.ts";
 
 export const PreactPlugin = (): Plugin => {
   return {
@@ -51,6 +53,11 @@ export const PreactPlugin = (): Plugin => {
 
         await Deno.mkdir(path.dirname(htmlFilePath), { recursive: true });
         await Deno.writeTextFile(htmlFilePath, html);
+
+        await build.esbuild.build({
+          ...build.initialOptions,
+          entryPoints: [...getAssets()],
+        });
 
         return {
           namespace: "PreactPlugin",

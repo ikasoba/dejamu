@@ -6,6 +6,7 @@ import { getHeadChildren, resetHeadChildren } from "../Head.tsx";
 import * as FrontMatter from "../../deps/front_matter.ts";
 import { EmptyLayout } from "./EmptyLayout.tsx";
 import { Markdown } from "./Markdown.tsx";
+import { getAssets } from "../asset.ts";
 
 export type LayoutComponent = FunctionComponent<
   { data: Record<string, any>; children: string }
@@ -82,6 +83,11 @@ export const MarkdownPlugin = (layoutDirectory: string): Plugin => {
 
         await Deno.mkdir(path.dirname(htmlFilePath), { recursive: true });
         await Deno.writeTextFile(htmlFilePath, html);
+
+        await build.esbuild.build({
+          ...build.initialOptions,
+          entryPoints: [...getAssets()],
+        });
 
         return {
           namespace: "MarkdownPlugin",
