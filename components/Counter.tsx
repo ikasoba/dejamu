@@ -5,7 +5,7 @@ export default function Counter() {
 
   return (
     <button onClick={() => setCount((count) => count + 1)}>
-      count: {count}
+      {count == 0 ? "click me!" : `count: ${count}`}
     </button>
   );
 }

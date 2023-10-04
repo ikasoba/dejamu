@@ -1,5 +1,5 @@
 ---
-layout: DejamuTopPage.tsx
+layout: DejamuPage.tsx
 ---
 
 <h1>
@@ -12,17 +12,10 @@ layout: DejamuTopPage.tsx
 Small Static Site Generator for Deno.
 </p>
 
-# Initialize the site
-```sh
-deno run -rA https://raw.githubusercontent.com/ikasoba/dejamu/main/scripts/init.ts
-```
-
-# Build the site
-```sh
-deno task build
-```
-
-# Start the local server
-```sh
-deno task serve
-```
+<div class="center-box">
+  <a href="./getting-started/">
+    <button class="get-started-btn">
+    Get Started
+    </button>
+  </a>
+</div>
