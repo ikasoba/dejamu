@@ -108,9 +108,11 @@ export const MarkdownPlugin = (layoutDirectory: string): Plugin => {
               JSON.stringify(layoutPath ?? "dejamu/plugins/md/EmptyLayout.tsx")
             };
 
+            window.addEventListener("DOMContentLoaded", () => {
               hydrate(<Layout data={${JSON.stringify(data)}}>{${
               JSON.stringify(markdownBody)
             }}</Layout>, document.body);
+            });
         `,
             loader: "tsx",
           };

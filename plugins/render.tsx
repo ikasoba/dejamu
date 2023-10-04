@@ -24,8 +24,8 @@ export async function renderToFile(
           {jsFilePath && (
             <script
               src={jsFilePath}
-              defer
               type="module"
+              async
             />
           )}
           <script

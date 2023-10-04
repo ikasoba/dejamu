@@ -71,7 +71,9 @@ export const PreactPlugin = (): Plugin => {
             )
           };
 
-            hydrate(<Page/>, document.body);
+            window.addEventListener("DOMContentLoaded", () => {
+              hydrate(<Page/>, document.body);
+            });
           `,
           loader: "tsx",
         };
