@@ -34,7 +34,7 @@ export const PostCssPlugin = (
 
           return {
             contents: res.css,
-            loader: "css",
+            loader: "copy",
           };
         },
       );
