@@ -6,6 +6,7 @@ import * as path from "../deps/path.ts";
 
 export async function renderToFile(
   node: VNode,
+  globalData: Record<string, any>,
   htmlFilePath: string,
   jsFilePath?: string,
 ) {
@@ -27,6 +28,14 @@ export async function renderToFile(
               type="module"
             />
           )}
+          <script
+            dangerouslySetInnerHTML={{
+              __html: Object.entries(globalData)
+                .map(([k, v]) => `var ${k} = ${JSON.stringify(v)}`)
+                .join(";"),
+            }}
+          >
+          </script>
           {...getHeadChildren()}
         </head>
         <body dangerouslySetInnerHTML={{ __html: renderedNode }} />

@@ -5,14 +5,13 @@ import * as path from "../../deps/path.ts";
 import { getHeadChildren, resetHeadChildren } from "../Head.tsx";
 import { esbuild } from "https://deno.land/x/esbuild_deno_loader@0.8.1/deps.ts";
 import { renderToFile } from "../render.tsx";
+import { initializeConstantsForBuildTime } from "../constants.ts";
 
 export const PreactPlugin = (): Plugin => {
   return {
     name: "PreactPlugin",
     setup(build) {
       build.onResolve({ filter: /\.[jt]sx$/ }, async (args) => {
-        globalThis.isBrowser = false;
-
         if (
           args.kind != "entry-point" ||
           args.namespace == "PreactPlugin-stdin" ||
@@ -37,10 +36,21 @@ export const PreactPlugin = (): Plugin => {
           path.basename(args.path, path.extname(args.path)) + ".html",
         );
 
+        const pageDirectory = path.join(
+          path.relative(Deno.cwd(), path.dirname(args.path)).split(path.SEP)
+            .slice(1).join(path.SEP),
+        );
+
+        initializeConstantsForBuildTime(pageDirectory);
+
         jsFilePath = path.relative(path.dirname(htmlFilePath), jsFilePath);
 
         await renderToFile(
           <Page />,
+          {
+            pageDirectory: globalThis.pageDirectory,
+            projectRoot: globalThis.projectRoot,
+          },
           htmlFilePath,
           jsFilePath,
         );

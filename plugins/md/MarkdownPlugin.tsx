@@ -7,6 +7,7 @@ import * as FrontMatter from "../../deps/front_matter.ts";
 import { EmptyLayout } from "./EmptyLayout.tsx";
 import { Markdown } from "./Markdown.tsx";
 import { renderToFile } from "../render.tsx";
+import { initializeConstantsForBuildTime } from "../constants.ts";
 
 export type LayoutComponent = FunctionComponent<
   { data: Record<string, any>; children: string }
@@ -35,8 +36,6 @@ export const MarkdownPlugin = (layoutDirectory: string): Plugin => {
     name: "MarkdownPlugin",
     setup(build) {
       build.onResolve({ filter: /\.md$/ }, async (args) => {
-        globalThis.isBrowser = false;
-
         const { data, markdownBody } = await loadMarkdown(args.path);
 
         const layoutPath = data?.layout != null
@@ -63,12 +62,23 @@ export const MarkdownPlugin = (layoutDirectory: string): Plugin => {
           path.basename(args.path, path.extname(args.path)) + ".html",
         );
 
+        const pageDirectory = path.join(
+          path.relative(Deno.cwd(), path.dirname(args.path)).split(path.SEP)
+            .slice(1).join(path.SEP),
+        );
+
+        initializeConstantsForBuildTime(pageDirectory);
+
         jsFilePath = path.relative(path.dirname(htmlFilePath), jsFilePath);
 
         await renderToFile(
           <Layout data={data}>
             {markdownBody}
           </Layout>,
+          {
+            pageDirectory: globalThis.pageDirectory,
+            projectRoot: globalThis.projectRoot,
+          },
           htmlFilePath,
           jsFilePath,
         );

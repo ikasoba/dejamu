@@ -31,8 +31,15 @@ export default {
   ],
 } satisfies Config;`;
 
+  const welcomeToDejamu = await Deno.readTextFile(
+    new URL("./welcome-to-dejamu.tsx", import.meta.url),
+  );
+
   await Deno.writeTextFile("./deno.json", JSON.stringify(denoFile, null, "  "));
   await Deno.writeTextFile("./dejamu.config.ts", configFile);
+
+  await Deno.mkdir("pages");
+  await Deno.writeTextFile("./pages/index.ts", welcomeToDejamu);
 }
 
 if (import.meta.main) {
