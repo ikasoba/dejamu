@@ -35,6 +35,8 @@ jobs:
         uses: denoland/setup-deno@v1
         with:
           deno-version: v1.x
+      - name: "cache dependency"
+        run: deno cache ./dejamu.config.ts
       - name: "build page"
         run: deno task build
       - name: Setup Pages
