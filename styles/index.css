@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap');
+
 h1, h2, h3 {
   border-left: 0.5rem solid gray;
   padding-left: 0.25rem;
@@ -9,6 +11,7 @@ pre > code {
   padding: 1rem;
   border-radius: 0.5rem;
   display: block;
+  font-family: 'Source Code Pro', monospace;
 }
 
 footer {
