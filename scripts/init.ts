@@ -31,9 +31,9 @@ export default {
   ],
 } satisfies Config;`;
 
-  const welcomeToDejamu = await Deno.readTextFile(
+  const welcomeToDejamu = await fetch(
     new URL("./welcome-to-dejamu.tsx", import.meta.url),
-  );
+  ).then((x) => x.text());
 
   await Deno.writeTextFile("./deno.json", JSON.stringify(denoFile, null, "  "));
   await Deno.writeTextFile("./dejamu.config.ts", configFile);
