@@ -39,7 +39,7 @@ export default {
   await Deno.writeTextFile("./dejamu.config.ts", configFile);
 
   await Deno.mkdir("pages");
-  await Deno.writeTextFile("./pages/index.ts", welcomeToDejamu);
+  await Deno.writeTextFile("./pages/index.tsx", welcomeToDejamu);
 }
 
 if (import.meta.main) {
