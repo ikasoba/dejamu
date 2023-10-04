@@ -1,5 +1,4 @@
 import { Command } from "../deps/command.ts";
-import { getContext } from "./context.ts";
 import { main as initProject } from "../scripts/init.ts";
 import { Source } from "./generator/Source.ts";
 import { genContext } from "./generator/genContext.ts";

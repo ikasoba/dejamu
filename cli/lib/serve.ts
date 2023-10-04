@@ -7,13 +7,12 @@ export const serve = async (ctx: BuildContext, port: number) => {
     if (e?.code != "ENOENT") throw e;
   }
 
-  const server = await ctx.serve({
+  await ctx.serve({
     port,
-    host: "localhost",
-    servedir: "./.out/",
+    servedir: ".out",
   });
 
   console.log(
-    `Waiting for connection at http://${server.host}:${server.port}/`,
+    `Waiting for connection at http://localhost:${port}/`,
   );
 };

@@ -15,11 +15,13 @@ export const getContext = async (config: Config) => {
       ...denoPlugins({ configPath: path.resolve("deno.json") }),
     ],
     outdir: ".out/",
+    outbase: ".",
     format: "esm",
     bundle: true,
     splitting: true,
     treeShaking: true,
     minify: true,
+
     platform: "browser",
     jsx: "automatic",
     jsxImportSource: "npm:preact",
@@ -28,5 +30,5 @@ export const getContext = async (config: Config) => {
     },
   };
 
-  return await context(esbuildOptions);
+  return context(esbuildOptions);
 };

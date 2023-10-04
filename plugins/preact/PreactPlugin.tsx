@@ -3,8 +3,8 @@ import { FunctionComponent } from "npm:preact/";
 import { render } from "npm:preact-render-to-string/";
 import * as path from "../../deps/path.ts";
 import { getHeadChildren, resetHeadChildren } from "../Head.tsx";
-import { getAssets } from "../asset.ts";
 import { esbuild } from "https://deno.land/x/esbuild_deno_loader@0.8.1/deps.ts";
+import { renderToFile } from "../render.tsx";
 
 export const PreactPlugin = (): Plugin => {
   return {
@@ -23,41 +23,27 @@ export const PreactPlugin = (): Plugin => {
           path.toFileUrl(path.resolve(args.path)).toString()
         );
 
-        const jsFilePath = path.basename(args.path, path.extname(args.path)) +
+        let jsFilePath = path.join(
+          build.initialOptions.outdir ?? "./",
+          path.relative(Deno.cwd(), path.dirname(args.path)),
+          path.basename(args.path, path.extname(args.path)),
+        ) +
           ".js";
 
         const htmlFilePath = path.join(
           build.initialOptions.outdir ?? "./",
+          path.relative(Deno.cwd(), path.dirname(args.path)).split(path.SEP)
+            .slice(1).join(path.SEP),
           path.basename(args.path, path.extname(args.path)) + ".html",
         );
 
-        resetHeadChildren();
-        const renderedPage = render(<Page />);
+        jsFilePath = path.relative(path.dirname(htmlFilePath), jsFilePath);
 
-        const html = `<!doctype html>${
-          render(
-            <html>
-              <head>
-                <meta charSet="utf-8" />
-                <script
-                  src={jsFilePath}
-                  defer
-                  type="module"
-                />
-                {...getHeadChildren()}
-              </head>
-              <body dangerouslySetInnerHTML={{ __html: renderedPage }} />
-            </html>,
-          )
-        }`;
-
-        await Deno.mkdir(path.dirname(htmlFilePath), { recursive: true });
-        await Deno.writeTextFile(htmlFilePath, html);
-
-        await build.esbuild.build({
-          ...build.initialOptions,
-          entryPoints: [...getAssets()],
-        });
+        await renderToFile(
+          <Page />,
+          htmlFilePath,
+          jsFilePath,
+        );
 
         return {
           namespace: "PreactPlugin",
