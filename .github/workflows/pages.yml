@@ -31,6 +31,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
       - name: "setup deno"
         uses: denoland/setup-deno@v1
         with:
@@ -39,8 +41,6 @@ jobs:
         run: deno cache ./dejamu.config.ts
       - name: "build page"
         run: deno task build
-      - name: Setup Pages
-        uses: actions/configure-pages@v3
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
         with:
