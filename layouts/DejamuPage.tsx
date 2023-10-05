@@ -1,7 +1,7 @@
 import { Head } from "dejamu/mod.ts";
 import { Markdown } from "dejamu/plugins/md/Markdown.tsx";
 import { LayoutComponent } from "dejamu/plugins/md/MarkdownPlugin.tsx";
-import Counter from "../components/Counter.tsx";
+import Counter from "../components/Counter.islands.tsx";
 import * as path from "path/mod.ts";
 
 export default (function DejamuPage({ children }) {
