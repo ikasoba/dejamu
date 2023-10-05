@@ -18,10 +18,10 @@ export function revive(
     };
 
   const stack: StackContent[] = [];
-  const childNodes = node.childNodes;
+  const childNodes = Array.from(node.childNodes);
 
-  for (let i = 0; i < childNodes.length; i++) {
-    const child = childNodes[i];
+  while (childNodes.length) {
+    const child = childNodes.shift()!;
 
     if (child instanceof Comment) {
       if (child.textContent?.startsWith("djm-ph")) {
@@ -40,6 +40,8 @@ export function revive(
           prop,
         });
 
+        child.remove();
+
         continue;
       } else if (child.textContent?.startsWith("/djm-ph")) {
         const [_, id] = child.textContent.split(":", 2);
@@ -52,6 +54,9 @@ export function revive(
 
         const parent = child.parentNode;
         const next = child.nextSibling;
+
+        child.remove();
+
         const container = document.createDocumentFragment();
 
         while (1) {

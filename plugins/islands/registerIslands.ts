@@ -47,6 +47,4 @@ export async function registerIslands(root: string) {
       });
     }
   }
-
-  console.log(current);
 }
