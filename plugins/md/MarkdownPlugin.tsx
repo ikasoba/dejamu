@@ -6,8 +6,12 @@ import { getHeadChildren, resetHeadChildren } from "../Head.tsx";
 import * as FrontMatter from "../../deps/front_matter.ts";
 import { EmptyLayout } from "./EmptyLayout.tsx";
 import { Markdown } from "./Markdown.tsx";
-import { renderToFile } from "../render.tsx";
+import { template } from "../render.tsx";
 import { initializeConstantsForBuildTime } from "../constants.ts";
+import { getIslands } from "../islands/hooks.tsx";
+import { putTextFile } from "../../utils/putTextFile.ts";
+import { Island } from "../islands/registerIslands.ts";
+import { collectIslands } from "../collectIslands.ts";
 
 export type LayoutComponent = FunctionComponent<
   { data: Record<string, any>; children: string }
@@ -71,47 +75,72 @@ export const MarkdownPlugin = (layoutDirectory: string): Plugin => {
 
         jsFilePath = path.relative(path.dirname(htmlFilePath), jsFilePath);
 
-        await renderToFile(
+        const body = render(
           <Layout data={data}>
             {markdownBody}
           </Layout>,
-          {
-            pageDirectory: globalThis.pageDirectory,
-            projectRoot: globalThis.projectRoot,
-          },
-          htmlFilePath,
-          jsFilePath,
         );
 
-        return {
-          namespace: "MarkdownPlugin",
-          path: args.path,
-        };
+        const islands = [...getIslands()];
+
+        if (islands.length == 0) {
+          const html = template(
+            body,
+            {
+              pageDirectory: globalThis.pageDirectory,
+              projectRoot: globalThis.projectRoot,
+            },
+            undefined,
+          );
+
+          await putTextFile(htmlFilePath, html);
+
+          return {
+            namespace: "PreactPlugin",
+            path: args.path,
+            pluginData: null,
+          };
+        } else {
+          const html = template(
+            body,
+            {
+              pageDirectory: globalThis.pageDirectory,
+              projectRoot: globalThis.projectRoot,
+            },
+            jsFilePath,
+          );
+
+          await putTextFile(htmlFilePath, html);
+
+          return {
+            namespace: "PreactPlugin",
+            path: args.path,
+            pluginData: islands,
+          };
+        }
       });
 
       build.onLoad(
         { filter: /.*/, namespace: "MarkdownPlugin" },
         async (args) => {
-          const { data, markdownBody } = await loadMarkdown(args.path);
+          const islands: Island[] | null = args.pluginData;
 
-          const layoutPath = data?.layout != null
-            ? path.toFileUrl(
-              path.resolve(path.join(layoutDirectory, `${data.layout}`)),
-            )
-              .toString()
-            : null;
+          if (islands == null) {
+            return {
+              loader: "empty",
+              contents: "",
+            };
+          }
+
+          const { head: islandsHead, reviveArg } = collectIslands(islands);
 
           return {
             contents: `
-              import {hydrate} from "npm:preact/";
-              import Layout from ${
-              JSON.stringify(layoutPath ?? "dejamu/plugins/md/EmptyLayout.tsx")
-            };
+              import {revive} from "dejamu/mod.ts";
+              ${islandsHead}
 
             window.addEventListener("DOMContentLoaded", () => {
-              hydrate(<Layout data={${JSON.stringify(data)}}>{${
-              JSON.stringify(markdownBody)
-            }}</Layout>, document.body);
+              revive(${reviveArg}, document.body);
             });
         `,
             loader: "tsx",

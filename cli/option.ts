@@ -4,7 +4,7 @@ import { Config } from "./Config.ts";
 import { denoPlugins } from "../deps/esbuild_deno_loader.ts";
 import * as path from "../deps/path.ts";
 
-export const getContext = async (config: Config) => {
+export const getOption = async (config: Config) => {
   const esbuildOptions: BuildOptions = {
     entryPoints: (await Promise.all(
       config.entryPoints.map((x) => glob(x)),
@@ -30,5 +30,5 @@ export const getContext = async (config: Config) => {
     },
   };
 
-  return context(esbuildOptions);
+  return esbuildOptions;
 };
