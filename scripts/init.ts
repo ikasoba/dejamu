@@ -24,7 +24,7 @@ import PreactPlugin from "dejamu/plugins/preact/mod.ts";
 import MarkdownPlugin from "dejamu/plugins/md/mod.ts";
 
 export default {
-  entryPoints: ["pages/*.{jsx,tsx,md}"],
+  entryPoints: ["pages/**/*.{jsx,tsx,md}"],
   plugins: [
     PreactPlugin(),
     MarkdownPlugin("layouts/"),
