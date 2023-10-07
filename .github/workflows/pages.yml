@@ -40,7 +40,7 @@ jobs:
       - name: "cache dependency"
         run: deno cache ./dejamu.config.ts
       - name: "build page"
-        run: deno task build || deno task build
+        run: deno task build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
         with:
