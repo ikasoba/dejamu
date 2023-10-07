@@ -29,4 +29,6 @@ export const build = async (ctx: DejamuContext) => {
   }
 
   console.log("build complete!");
+
+  Deno.exit(0);
 };
