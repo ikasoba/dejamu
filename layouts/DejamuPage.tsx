@@ -18,7 +18,7 @@ export default (function DejamuPage({ children }) {
       <Markdown>
         {children}
       </Markdown>
-      <footer>
+      <footer className="footer">
         <a href="https://github.com/ikasoba/dejamu">
           Github Repository
         </a>

@@ -14,8 +14,8 @@ Small Static Site Generator for Deno.
 
 <div class="center-box">
   <a href="./getting-started/">
-    <button class="get-started-btn">
-    Get Started
+    <button class="btn text-xl">
+    Get Started!
     </button>
   </a>
 </div>

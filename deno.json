@@ -6,8 +6,9 @@
     "serve": "deno task dejamu serve"
   },
   "imports": {
-    "dejamu/": "https://raw.githubusercontent.com/ikasoba/dejamu/0.0.14/",
-    "path/": "https://deno.land/std@0.203.0/path/"
+    "dejamu/": "https://raw.githubusercontent.com/ikasoba/dejamu/0.0.16/",
+    "path/": "https://deno.land/std@0.203.0/path/",
+    "@twind/": "npm:/@twind/"
   },
   "compilerOptions": {
     "jsx": "react-jsx",

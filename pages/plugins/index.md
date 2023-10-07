@@ -8,8 +8,6 @@ layout: DejamuPage.tsx
   </p>
 </h1>
 
-<hr/>
-
 <section class="center-box card-list">
   <article class="card">
     <h2><a href="https://github.com/ikasoba/dejamu/tree/main/plugins/preact">

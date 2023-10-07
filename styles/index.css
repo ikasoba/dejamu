@@ -1,32 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap');
 
-.center-box {
-  display: flex;
-  justify-content: center;
-}
-
-.get-started-btn {
-  font-size: 1.5rem;
-}
-
-.card-list {
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.card {
-  background-color: white;
-  border: 1px solid lightgray;
-  border-radius: 0.5rem;
-  padding: 0.5rem;
-
-  width: 18rem;
-  aspect-ratio: 4 / 3;
-
-  display: flex;
-  flex-direction: column;
-}
-
 .card > h2 {
   margin: 0;
 }
@@ -63,38 +36,8 @@ pre > code {
   overflow: auto;
 }
 
-footer {
+.footer {
   display: flex;
   gap: 0.5rem;
   padding: 0.5rem;
-}
-
-button {
-  background-color: dodgerblue;
-  color: white;
-  padding: 0.25em;
-  border: none;
-  border-radius: 0.25em;
-
-  transition: filter 0.05s;
-}
-
-button:hover {
-  filter: brightness(0.95);
-}
-
-button:active {
-  filter: brightness(0.9);
-}
-
-table {
-  border: 1px solid lightgray;
-}
-
-table th, table td {
-  padding: 0.25rem;
-}
-
-table th:nth-child(2), table td:nth-child(2) {
-  border-left: 1px solid lightgray;
 }
