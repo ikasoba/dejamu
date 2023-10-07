@@ -21,6 +21,10 @@ export const getHeadChildren = () => {
   return res;
 };
 
+export const appendHead = (children: ComponentChildren) => {
+  headChildren.push(children);
+};
+
 export function Head({ children }: HeadProps) {
   headChildren.push(children);
 
