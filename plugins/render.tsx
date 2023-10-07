@@ -14,13 +14,6 @@ export function template(
       <html>
         <head>
           <meta charSet="utf-8" />
-          {jsFilePath && (
-            <script
-              src={jsFilePath}
-              type="module"
-              async
-            />
-          )}
           <script
             dangerouslySetInnerHTML={{
               __html: Object.entries(globalData)
@@ -29,6 +22,13 @@ export function template(
             }}
           >
           </script>
+          {jsFilePath && (
+            <script
+              src={jsFilePath}
+              type="module"
+              async
+            />
+          )}
           {...getHeadChildren()}
         </head>
         <body dangerouslySetInnerHTML={{ __html: body }} />

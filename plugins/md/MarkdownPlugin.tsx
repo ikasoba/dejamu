@@ -1,17 +1,16 @@
 import { Plugin } from "../../deps/esbuild.ts";
-import { ComponentChildren, FunctionComponent } from "npm:preact/";
+import { FunctionComponent } from "npm:preact/";
 import { render } from "npm:preact-render-to-string/";
 import * as path from "../../deps/path.ts";
-import { getHeadChildren, resetHeadChildren } from "../Head.tsx";
 import * as FrontMatter from "../../deps/front_matter.ts";
 import { EmptyLayout } from "./EmptyLayout.tsx";
-import { Markdown } from "./Markdown.tsx";
-import { template } from "../render.tsx";
 import { initializeConstantsForBuildTime } from "../constants.ts";
 import { getIslands } from "../islands/hooks.tsx";
-import { putTextFile } from "../../utils/putTextFile.ts";
 import { Island } from "../islands/registerIslands.ts";
 import { collectIslands } from "../collectIslands.ts";
+import * as PluginSystem from "../../pluginSystem/PluginSystem.ts";
+import { DejamuPlugin } from "../../pluginSystem/Plugin.ts";
+import { dymport } from "../../utils/dymport.ts";
 
 export type LayoutComponent = FunctionComponent<
   { data: Record<string, any>; children: string }
@@ -35,118 +34,75 @@ const loadMarkdown = async (path: string) => {
   return { data, markdownBody };
 };
 
-export const MarkdownPlugin = (layoutDirectory: string): Plugin => {
+export const MarkdownPlugin = (layoutDirectory: string): DejamuPlugin => {
   return {
-    name: "MarkdownPlugin",
-    setup(build) {
-      build.onResolve({ filter: /\.md$/ }, async (args) => {
-        const { data, markdownBody } = await loadMarkdown(args.path);
+    type: "esbuild",
+    plugin: {
+      name: "MarkdownPlugin",
+      setup(build) {
+        build.onResolve({ filter: /\.md$/ }, async (args) => {
+          const { data, markdownBody } = await loadMarkdown(args.path);
 
-        const layoutPath = data?.layout != null
-          ? path.toFileUrl(
-            path.resolve(path.join(layoutDirectory, `${data.layout}`)),
-          ).toString()
-          : null;
+          const layoutPath = data?.layout != null
+            ? path.toFileUrl(
+              path.resolve(path.join(layoutDirectory, `${data.layout}`)),
+            ).toString()
+            : null;
 
-        const Layout: LayoutComponent = layoutPath
-          ? (await import(layoutPath)).default
-          : EmptyLayout;
+          let jsFilePath = path.join(
+            build.initialOptions.outdir ?? "./",
+            path.relative(Deno.cwd(), path.dirname(args.path)),
+            path.basename(args.path, path.extname(args.path)),
+          ) +
+            ".js";
 
-        let jsFilePath = path.join(
-          build.initialOptions.outdir ?? "./",
-          path.relative(Deno.cwd(), path.dirname(args.path)),
-          path.basename(args.path, path.extname(args.path)),
-        ) +
-          ".js";
-
-        const htmlFilePath = path.join(
-          build.initialOptions.outdir ?? "./",
-          path.relative(Deno.cwd(), path.dirname(args.path)).split(path.SEP)
-            .slice(1).join(path.SEP),
-          path.basename(args.path, path.extname(args.path)) + ".html",
-        );
-
-        const pageDirectory = path.join(
-          path.relative(Deno.cwd(), path.dirname(args.path)).split(path.SEP)
-            .slice(1).join(path.SEP),
-        );
-
-        initializeConstantsForBuildTime(pageDirectory);
-
-        jsFilePath = path.relative(path.dirname(htmlFilePath), jsFilePath);
-
-        const body = render(
-          <Layout data={data}>
-            {markdownBody}
-          </Layout>,
-        );
-
-        const islands = [...getIslands()];
-
-        if (islands.length == 0) {
-          const html = template(
-            body,
-            {
-              pageDirectory: globalThis.pageDirectory,
-              projectRoot: globalThis.projectRoot,
-            },
-            undefined,
+          const htmlFilePath = path.join(
+            build.initialOptions.outdir ?? "./",
+            path.relative(Deno.cwd(), path.dirname(args.path)).split(path.SEP)
+              .slice(1).join(path.SEP),
+            path.basename(args.path, path.extname(args.path)) + ".html",
           );
 
-          await putTextFile(htmlFilePath, html);
+          const pageDirectory = path.join(
+            path.relative(Deno.cwd(), path.dirname(args.path)).split(path.SEP)
+              .slice(1).join(path.SEP),
+          );
+
+          jsFilePath = path.relative(path.dirname(htmlFilePath), jsFilePath);
+
+          initializeConstantsForBuildTime(pageDirectory);
+
+          const Layout: LayoutComponent = layoutPath
+            ? (await dymport(layoutPath)).default
+            : EmptyLayout;
+
+          const body = render(
+            <Layout data={data}>
+              {markdownBody}
+            </Layout>,
+          );
+
+          const islands = [...getIslands()];
 
           return {
             namespace: "PreactPlugin",
             path: args.path,
-            pluginData: null,
+            pluginData: await PluginSystem.build(
+              islands,
+              body,
+              htmlFilePath,
+              jsFilePath,
+            ),
           };
-        } else {
-          const html = template(
-            body,
-            {
-              pageDirectory: globalThis.pageDirectory,
-              projectRoot: globalThis.projectRoot,
-            },
-            jsFilePath,
-          );
+        });
 
-          await putTextFile(htmlFilePath, html);
-
-          return {
-            namespace: "PreactPlugin",
-            path: args.path,
-            pluginData: islands,
-          };
-        }
-      });
-
-      build.onLoad(
-        { filter: /.*/, namespace: "MarkdownPlugin" },
-        async (args) => {
-          const islands: Island[] | null = args.pluginData;
-
-          if (islands == null) {
-            return {
-              loader: "empty",
-              contents: "",
-            };
-          }
-
-          const { head: islandsHead, reviveArg } = collectIslands(islands);
-
-          return {
-            contents: `
-              import {revive} from "dejamu/mod.ts";
-              ${islandsHead}
-
-            window.addEventListener("DOMContentLoaded", () => {
-              revive(${reviveArg}, document.body);
-            });
-        `,
-            loader: "tsx",
-          };
-        },
-      );
+        build.onLoad(
+          { filter: /.*/, namespace: "MarkdownPlugin" },
+          (args) => {
+            return args.pluginData;
+          },
+        );
+      },
     },
   };
 };
