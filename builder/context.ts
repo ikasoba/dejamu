@@ -5,6 +5,7 @@ import { Config } from "./Config.ts";
 import { getOption } from "./option.ts";
 import { ArgsType, RemovePrefix } from "../utils/types.ts";
 import { DejamuPlugin } from "../pluginSystem/Plugin.ts";
+import { PreBuildScript } from "./PreBuildScript.ts";
 
 export class DejamuContext {
   static current: DejamuContext;
@@ -57,6 +58,17 @@ export class DejamuContext {
     for (const plugin of this.dejamuPlugins) {
       await (plugin[`on${name}`] as any)?.(...args);
     }
+  }
+
+  async dispatchRender(
+    pageBody: string,
+    script: PreBuildScript,
+  ): Promise<string> {
+    for (const plugin of this.dejamuPlugins) {
+      pageBody = (await plugin.onRender?.(pageBody, script)) ?? pageBody;
+    }
+
+    return pageBody;
   }
 
   async reload(newConfig?: Config) {

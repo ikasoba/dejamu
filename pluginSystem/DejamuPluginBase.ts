@@ -12,6 +12,7 @@ export interface DejamuPluginBase {
 
   /**
    * ページをレンダリングした時のフックで、ファイルに保存される前に処理を書き込んだりできます。
+   * @returns 空じゃなければ `pageBody` を返り値にする
    */
   onRender?(
     pageBody: string,
@@ -19,5 +20,5 @@ export interface DejamuPluginBase {
      * htmlファイルに書き込まれるJSファイル
      */
     script: PreBuildScript,
-  ): Awaitable<void>;
+  ): Awaitable<string | null | void>;
 }
