@@ -10,20 +10,28 @@ import * as http from "../../deps/http.ts";
 import { contentType } from "../../deps/media_types.ts";
 import { build } from "./build.ts";
 import { HotReloadPlugin } from "../../plugins/hotReload/HotReloadPlugin.ts";
+import { Source } from "../generator/Source.ts";
+import { genContext } from "../generator/genContext.ts";
+import { genBuildCode } from "../generator/genBuildCode.ts";
+import { runDeno } from "../util/runDeno.ts";
+
+async function runBuildTask() {
+  const source: Source = { header: "", body: "" };
+
+  source.header +=
+    'import { HotReloadPlugin } from "dejamu/plugins/hotReload/HotReloadPlugin.ts";';
+
+  genContext(source, "ctx");
+  source.body += `ctx.addPlugins(HotReloadPlugin());`;
+
+  genBuildCode(source, "ctx");
+
+  await runDeno(`${source.header}\n${source.body}`);
+}
 
 export const serve = async (ctx: DejamuContext, port: number) => {
   initIslandsState();
   await registerIslands("./");
-
-  ctx.addPlugins(
-    HotReloadPlugin(),
-  );
-
-  try {
-    await Deno.remove("./.out", { recursive: true });
-  } catch (e) {
-    if (!(e instanceof Deno.errors.NotFound)) throw e;
-  }
 
   const webSocketClients: Set<WebSocket> = new Set();
 
@@ -76,7 +84,7 @@ export const serve = async (ctx: DejamuContext, port: number) => {
     }
   });
 
-  await build(ctx);
+  await runBuildTask();
 
   queueMicrotask(async () => {
     const watcher = Deno.watchFs(".", {
@@ -109,7 +117,7 @@ export const serve = async (ctx: DejamuContext, port: number) => {
           }, 1500);
         }
 
-        await build(ctx);
+        await runBuildTask();
 
         for (const socket of webSocketClients) {
           if (socket.readyState == 1) await socket.send("reload");

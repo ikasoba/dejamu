@@ -7,7 +7,6 @@ import "../islands/hooks.tsx";
 import { getIslands } from "../islands/hooks.tsx";
 import * as PluginSystem from "../../pluginSystem/PluginSystem.ts";
 import { DejamuPlugin } from "../../pluginSystem/Plugin.ts";
-import { dymport } from "../../utils/dymport.ts";
 
 export const PreactPlugin = (): DejamuPlugin => {
   return {
@@ -46,8 +45,8 @@ export const PreactPlugin = (): DejamuPlugin => {
           initializeConstantsForBuildTime(pageDirectory);
 
           const { default: Page }: { default: FunctionComponent } =
-            await dymport(
-              path.toFileUrl(path.resolve(args.path)).toString(),
+            await import(
+              path.toFileUrl(path.resolve(args.path)).toString()
             );
 
           const body = renderToString(<Page />);

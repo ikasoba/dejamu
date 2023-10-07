@@ -3,7 +3,6 @@ import { resolve } from "../../deps/path.ts";
 import { nanoid } from "../../deps/nanoid.ts";
 import * as fs from "../../deps/fs.ts";
 import * as path from "../../deps/path.ts";
-import { dymport } from "../../utils/dymport.ts";
 
 export interface Island {
   id: string;
@@ -35,7 +34,7 @@ export const filterIslandsFiles = (paths: string[]) => {
 export async function registerIslands(root: string) {
   for await (const item of fs.expandGlob("**/*.islands.{jsx,tsx}", { root })) {
     const modulePath = path.toFileUrl(item.path).toString();
-    const module = await dymport(modulePath);
+    const module = await import(modulePath);
 
     for (const [k, v] of Object.entries(module)) {
       if (typeof v != "function") continue;

@@ -10,7 +10,6 @@ import { Island } from "../islands/registerIslands.ts";
 import { collectIslands } from "../collectIslands.ts";
 import * as PluginSystem from "../../pluginSystem/PluginSystem.ts";
 import { DejamuPlugin } from "../../pluginSystem/Plugin.ts";
-import { dymport } from "../../utils/dymport.ts";
 
 export type LayoutComponent = FunctionComponent<
   { data: Record<string, any>; children: string }
@@ -73,7 +72,7 @@ export const MarkdownPlugin = (layoutDirectory: string): DejamuPlugin => {
           initializeConstantsForBuildTime(pageDirectory);
 
           const Layout: LayoutComponent = layoutPath
-            ? (await dymport(layoutPath)).default
+            ? (await import(layoutPath)).default
             : EmptyLayout;
 
           const body = render(
