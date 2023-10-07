@@ -27,7 +27,7 @@ export async function build(
     );
   }
 
-  await DejamuContext.current.dispatch("Render", body, script);
+  body = await DejamuContext.current.dispatchRender(body, script);
 
   const jsFile = [
     script.head.join(";"),
