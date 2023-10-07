@@ -1,9 +1,9 @@
-import { Plugin } from "../deps/esbuild.ts";
+import { DejamuPlugin } from "../pluginSystem/Plugin.ts";
 
 export interface Config {
   /** glob patterns */
   entryPoints: string[];
 
   /** esbuild plugins */
-  plugins: Plugin[];
+  plugins: DejamuPlugin[];
 }

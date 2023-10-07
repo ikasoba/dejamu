@@ -1,6 +1,6 @@
 import { Source } from "./Source.ts";
 
-export const genBuildCode = (source: Source, configName: string) => {
+export const genBuildCode = (source: Source, ctxName: string) => {
   source.header += `import { build } from "dejamu/cli/lib/build.ts";`;
-  source.body += `await build(${configName});`;
+  source.body += `await build(${ctxName});`;
 };

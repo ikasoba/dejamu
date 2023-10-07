@@ -3,7 +3,9 @@ import { main as initProject } from "../scripts/init.ts";
 import { Source } from "./generator/Source.ts";
 import { genBuildCode } from "./generator/genBuildCode.ts";
 import { genServeCode } from "./generator/genServeCode.ts";
-import { loadConfig } from "./generator/loadConfig.ts";
+import { genContext } from "./generator/genContext.ts";
+import { runDeno } from "./util/runDeno.ts";
+import { runBuildTask, runServeTask } from "./util/task.ts";
 
 const app = new Command()
   .name("dejamu")
@@ -14,44 +16,12 @@ app.command("help", "show help message.")
 
 app.command("build", "build site.")
   .action(async () => {
-    let source: Source = { header: "", body: "" };
-
-    loadConfig(source, "cfg");
-    genBuildCode(source, "cfg");
-
-    const proc = new Deno.Command("deno", {
-      args: ["run", "-A", "-"],
-      stdin: "piped",
-    }).spawn();
-
-    const writer = proc.stdin.getWriter();
-
-    await writer.write(
-      new TextEncoder().encode(`${source.header}\n${source.body}`),
-    );
-
-    await writer.close();
+    await runBuildTask();
   });
 
 app.command("serve [port]", "Start development server.")
   .action(async (_, port) => {
-    let source: Source = { header: "", body: "" };
-
-    loadConfig(source, "cfg");
-    genServeCode(source, "cfg", port ? +port : 8000);
-
-    const proc = new Deno.Command("deno", {
-      args: ["run", "-A", "-"],
-      stdin: "piped",
-    }).spawn();
-
-    const writer = proc.stdin.getWriter();
-
-    await writer.write(
-      new TextEncoder().encode(`${source.header}\n${source.body}`),
-    );
-
-    await writer.close();
+    await runServeTask(port ? parseInt(port) : 8000)
   });
 
 app.command("init", "Initialize a new project in the current directory.")
