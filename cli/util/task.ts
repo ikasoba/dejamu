@@ -16,8 +16,7 @@ export async function runBuildTask() {
 export async function runServeTask(port: number) {
   const source: Source = { header: "", body: "" };
 
-  genContext(source, "ctx");
-  genServeCode(source, "ctx", port);
+  genServeCode(source, port);
 
   await runDeno(`${source.header}\n${source.body}`);
 }

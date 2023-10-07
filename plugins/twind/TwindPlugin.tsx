@@ -1,4 +1,4 @@
-import { extract, setup, TwindConfig } from "@twind/core";
+import { extract, install, TwindConfig } from "@twind/core";
 import * as path from "../../deps/path.ts";
 import { DejamuPlugin } from "../../pluginSystem/Plugin.ts";
 import { appendHead } from "../Head.tsx";
@@ -17,16 +17,15 @@ export function TwindPlugin(configPath: string): DejamuPlugin {
           path.toFileUrl(path.resolve(path.join(Deno.cwd(), configPath)))
             .toString(),
         );
-        config = await import(configPath);
+        config = (await import(configPath)).default;
 
-        setup(config);
+        install(config);
       },
       onRender(body, script) {
         const { html, css } = extract(body);
 
         appendHead(
-          <style>
-            {css}
+          <style dangerouslySetInnerHTML={{ __html: css }}>
           </style>,
         );
 
@@ -34,10 +33,8 @@ export function TwindPlugin(configPath: string): DejamuPlugin {
           'import { install as twind_install } from "@twind/core"',
           `import twindPlugin_twindConfig from ${JSON.stringify(configPath)}`,
         );
-        script.footer.push(
-          'window.addEventListener("load", () => {' +
-            "twind_install(twindPlugin_twindConfig);" +
-            "})",
+        script.footer.unshift(
+          "twind_install(twindPlugin_twindConfig);",
         );
 
         return html;

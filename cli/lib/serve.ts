@@ -29,7 +29,7 @@ async function runBuildTask() {
   await runDeno(`${source.header}\n${source.body}`);
 }
 
-export const serve = async (ctx: DejamuContext, port: number) => {
+export const serve = async (port: number) => {
   initIslandsState();
   await registerIslands("./");
 
