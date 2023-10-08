@@ -1,5 +1,5 @@
 import { BuildOptions, Plugin as EsbuildPlugin } from "../deps/esbuild.ts";
-import { glob } from "./glob.ts";
+import { glob } from "../utils/glob.ts";
 import { Config } from "./Config.ts";
 import { denoPlugins } from "../deps/esbuild_deno_loader.ts";
 import * as path from "../deps/path.ts";
