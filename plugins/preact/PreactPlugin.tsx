@@ -7,6 +7,7 @@ import "../islands/hooks.tsx";
 import { getIslands } from "../islands/hooks.tsx";
 import * as PluginSystem from "../../pluginSystem/PluginSystem.ts";
 import { DejamuPlugin } from "../../pluginSystem/Plugin.ts";
+import { copyAssets, initAssets } from "../asset.ts";
 
 export const PreactPlugin = (): DejamuPlugin => {
   return {
@@ -42,6 +43,7 @@ export const PreactPlugin = (): DejamuPlugin => {
 
           jsFilePath = path.relative(path.dirname(htmlFilePath), jsFilePath);
 
+          await initAssets(build.initialOptions.outdir!);
           initializeConstantsForBuildTime(pageDirectory);
 
           const { default: Page }: { default: FunctionComponent } =
@@ -52,6 +54,8 @@ export const PreactPlugin = (): DejamuPlugin => {
           const body = renderToString(<Page />);
 
           const islands = [...getIslands()];
+
+          await copyAssets();
 
           return {
             namespace: "PreactPlugin",
