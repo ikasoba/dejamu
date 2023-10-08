@@ -1,5 +1,5 @@
 .center-box {
-  @apply flex justify-center;
+  @apply flex flex-col items-center gap-2;
 }
 
 .btn {
@@ -47,12 +47,9 @@ h1, h2, h3 {
   padding-left: 0.25rem;
 }
 
-pre > code {
-  background-color: rgba(0,0,0,0.75);
-  color: white;
+pre {
   padding: 1rem;
   border-radius: 0.5rem;
-  display: block;
   overflow: auto;
 }
 
