@@ -1,4 +1,21 @@
-@import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap');
+.center-box {
+  @apply flex justify-center;
+}
+
+.btn {
+  @apply  bg-[dodgerblue] text-white p-1 rounded transition
+          hover:filter[brightness(0.95)] active:filter[brightness(0.9)];
+}
+
+.card-list {
+  @apply gap-2 flex-wrap;
+}
+
+.card {
+  @apply  flex flex-col
+          bg-white border border-[lightgray] rounded
+          p-2 width[15rem] aspect-ratio[4_/_3];
+}
 
 .card > h2 {
   margin: 0;
@@ -6,6 +23,10 @@
 
 .card > img {
   border-radius: 0.5rem;
+}
+
+.footer {
+  @apply flex gap-2 p-2 items-center;
 }
 
 body {
@@ -32,12 +53,35 @@ pre > code {
   padding: 1rem;
   border-radius: 0.5rem;
   display: block;
-  font-family: 'Source Code Pro', monospace;
   overflow: auto;
 }
 
-.footer {
-  display: flex;
-  gap: 0.5rem;
-  padding: 0.5rem;
+h1 {
+  font-size: 2em;
+  font-weight: bold;
+  margin: 1em 0;
+}
+
+h2 {
+  font-size: 1.5em;
+  font-weight: bold;
+  margin: 0.5em 0;
+}
+
+a {
+  color: dodgerblue;
+  text-decoration: underline;
+}
+
+a:visited {
+  color: slateblue;
+}
+
+a:active {
+  color: hotpink;
+}
+
+ul {
+  list-style: disc;
+  padding-left: 1.5rem;
 }

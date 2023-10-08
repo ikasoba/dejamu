@@ -9,10 +9,6 @@ export default (function DejamuPage({ children }) {
     <>
       <Head>
         <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <link
-          rel="stylesheet"
-          href={`${projectRoot}/styles/index.css`}
-        />
         <title>Dejamu🛌</title>
       </Head>
       <Markdown>

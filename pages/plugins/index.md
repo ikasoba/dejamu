@@ -35,4 +35,14 @@ layout: DejamuPage.tsx
     This plugin can be used to use Markdown in Dejamu.
     </p>
   </article>
+
+  <article class="card">
+    <h2><a href="https://github.com/ikasoba/dejamu/tree/main/plugins/twind">
+    Twind Plugin
+    </a></h2>
+    <p>
+
+This plugin can be used to use [Twind](https://twind.style) in Dejamu.
+    </p>
+  </article>
 </section>
