@@ -14,7 +14,9 @@ export const PreactPlugin = (): DejamuPlugin => {
     type: "esbuild",
     plugin: {
       name: "PreactPlugin",
-      setup(build) {
+      async setup(build) {
+        await initAssets(build.initialOptions.outdir!);
+
         build.onResolve({ filter: /\.[jt]sx$/ }, async (args) => {
           if (
             args.kind != "entry-point" ||

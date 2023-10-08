@@ -57,7 +57,9 @@ export const MarkdownPlugin = (
     type: "esbuild",
     plugin: {
       name: "MarkdownPlugin",
-      setup(build) {
+      async setup(build) {
+        await initAssets(build.initialOptions.outdir!);
+
         build.onResolve({ filter: /\.md$/ }, async (args) => {
           const { data, markdownBody } = await loadMarkdown(args.path);
 
@@ -88,7 +90,6 @@ export const MarkdownPlugin = (
 
           jsFilePath = path.relative(path.dirname(htmlFilePath), jsFilePath);
 
-          await initAssets(build.initialOptions.outdir!);
           initializeConstantsForBuildTime(pageDirectory);
           for (const plugin of plugins) {
             plugin.onRender?.();

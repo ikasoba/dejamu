@@ -1,7 +1,15 @@
 import * as path from "../deps/path.ts";
+import * as semver from "../deps/semver.ts";
 import { createDirectoryIfNotExists } from "../utils/createDirectoryIfNotExists.ts";
+import { getDenoCacheInfo } from "../utils/denoCache.ts";
+import {
+  asyncIterableIteratorToArray,
+  asyncIterableToArray,
+} from "../utils/glob.ts";
 import { createIdGenerator } from "../utils/id.ts";
 import { Awaitable } from "../utils/types.ts";
+
+const cacheInfo = await getDenoCacheInfo();
 
 let assetPair: Map<string, string>;
 let genId: () => string;
@@ -18,7 +26,10 @@ export const initAssets = async (_outdir: string) => {
 };
 
 export const copyAssets = async () => {
-  await Promise.all(queuedBatches.map((x) => x()));
+  while (queuedBatches.length) {
+    const fn = queuedBatches.pop()!;
+    await fn();
+  }
 };
 
 export const asset = (source: string) => {
@@ -50,18 +61,71 @@ export const asset = (source: string) => {
         /^npm:/.test(source) ? source : await import.meta.resolve(source),
       );
 
-      if (url.protocol == "npm:") {
-        url = new URL(`https://cdn.jsdelivr.net/npm/${url.pathname}`);
-      }
+      let fileData: Uint8Array;
 
-      const res = await fetch(url);
-      if (!res.ok) {
-        throw await res.text();
+      // npmであればキャッシュから取る
+      if (url.protocol == "npm:") {
+        const pattern = /^\/?([^/@]+|@[^/@]+\/[^/@]+)(?:@([^/]+))?/;
+
+        const pathname = url.pathname.replace(
+          pattern,
+          "",
+        );
+        const moduleNameAndVersion = url.pathname.match(
+          pattern,
+        );
+
+        if (moduleNameAndVersion == null) {
+          throw new Error(`cannot parse npm package name. ${url.pathname}`);
+        }
+
+        let [_, moduleName, moduleVersion] = moduleNameAndVersion;
+
+        if (moduleVersion == null) {
+          const rawVersions = await asyncIterableToArray(
+            Deno.readDir(
+              path.join(cacheInfo.npm, "registry.npmjs.org", moduleName),
+            ),
+          );
+          const versions = rawVersions
+            .map((x) => {
+              try {
+                return semver.parse(x.name);
+              } catch {
+                return null;
+              }
+            })
+            .filter((x): x is semver.SemVer => x != null);
+
+          moduleVersion = semver.format(
+            versions.sort((
+              a,
+              b,
+            ) => -semver.gt(a, b))[0],
+          );
+        }
+
+        fileData = await Deno.readFile(
+          path.join(
+            cacheInfo.npm,
+            "registry.npmjs.org",
+            moduleName,
+            moduleVersion,
+            pathname,
+          ),
+        );
+      } else {
+        const res = await fetch(url);
+        if (!res.ok) {
+          throw await res.text();
+        }
+
+        fileData = new Uint8Array(await res.arrayBuffer());
       }
 
       await Deno.writeFile(
-        path.join(outdir, assetPath),
-        (await res.blob()).stream(),
+        path.join(outdir, assetDest),
+        fileData,
       );
     });
 
