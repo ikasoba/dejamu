@@ -22,7 +22,7 @@ export const copyAssets = async () => {
 };
 
 export const asset = (source: string) => {
-  if (source.startsWith("./") || source.startsWith("../")) {
+  if (source.startsWith("/")) {
     source = path.normalize(source);
 
     if (assetPair.has(source)) return assetPair.get(source)!;
