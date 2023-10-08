@@ -1,8 +1,10 @@
 import { ComponentType } from "npm:preact";
 import { resolve } from "../../deps/path.ts";
-import { nanoid } from "../../deps/nanoid.ts";
 import * as fs from "../../deps/fs.ts";
 import * as path from "../../deps/path.ts";
+import { createIdGenerator } from "../../utils/id.ts";
+
+const id = createIdGenerator();
 
 export interface Island {
   id: string;
@@ -40,7 +42,7 @@ export async function registerIslands(root: string) {
       if (typeof v != "function") continue;
 
       current.islands.push({
-        id: nanoid(),
+        id: id(),
         modulePath: modulePath,
         exportName: k,
         component: v as any,
