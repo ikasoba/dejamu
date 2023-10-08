@@ -7,10 +7,10 @@ import MarkdownPlugin from "dejamu/plugins/md/mod.ts";
 export default {
   entryPoints: ["pages/*.{jsx,tsx,md}"],
   plugins: [
-    MarkdownPlugin(
+    MarkdownPlugin({
       // Specify the layout root directory.
-      "layouts/"
-    ),
+      layouts: "layouts/"
+    }),
   ],
 } satisfies Config;
 ```
