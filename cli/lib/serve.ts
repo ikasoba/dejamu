@@ -99,8 +99,15 @@ export const serve = async (port: number) => {
     ];
 
     const notifiers = new Set();
+    let prevEventRecieved = 0;
 
     for await (const event of watcher) {
+      if (Date.now() - prevEventRecieved < 1500) {
+        continue;
+      }
+
+      prevEventRecieved = Date.now();
+
       if (
         event.paths.filter((x) =>
           !(
