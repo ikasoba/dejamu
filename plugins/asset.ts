@@ -33,7 +33,7 @@ export const asset = (source: string) => {
     assetPair.set(source, assetPath);
 
     queuedBatches.push(async () => {
-      await Deno.copyFile(source, path.join(outdir, assetDest));
+      await Deno.copyFile(`.${source}`, path.join(outdir, assetDest));
     });
 
     return assetPath;
