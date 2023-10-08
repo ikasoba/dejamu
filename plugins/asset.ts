@@ -46,7 +46,9 @@ export const asset = (source: string) => {
     assetPair.set(source, assetPath);
 
     queuedBatches.push(async () => {
-      let url = new URL(await import.meta.resolve(source));
+      let url = new URL(
+        /^npm:/.test(source) ? source : await import.meta.resolve(source),
+      );
 
       if (url.protocol == "npm:") {
         url = new URL(`https://cdn.jsdelivr.net/npm/${url.pathname}`);
