@@ -11,6 +11,7 @@ import { collectIslands } from "../collectIslands.ts";
 import * as PluginSystem from "../../pluginSystem/PluginSystem.ts";
 import { DejamuPlugin } from "../../pluginSystem/Plugin.ts";
 import { copyAssets, initAssets } from "../asset.ts";
+import { Marked, MarkedExtension } from "../../deps/marked.ts";
 
 export type LayoutComponent = FunctionComponent<
   { data: Record<string, any>; children: string }
@@ -34,7 +35,24 @@ const loadMarkdown = async (path: string) => {
   return { data, markdownBody };
 };
 
-export const MarkdownPlugin = (layoutDirectory: string): DejamuPlugin => {
+export interface MarkdownExtension extends MarkedExtension {
+  onRender?(): void;
+}
+
+export interface MarkdownPluginConfig {
+  layouts?: string;
+  plugins?: MarkdownExtension[];
+}
+
+export let marked: Marked;
+
+export const MarkdownPlugin = (
+  { layouts = "layouts/", plugins = [] }: MarkdownPluginConfig,
+): DejamuPlugin => {
+  marked = new Marked();
+
+  marked.use(...plugins);
+
   return {
     type: "esbuild",
     plugin: {
@@ -45,7 +63,7 @@ export const MarkdownPlugin = (layoutDirectory: string): DejamuPlugin => {
 
           const layoutPath = data?.layout != null
             ? path.toFileUrl(
-              path.resolve(path.join(layoutDirectory, `${data.layout}`)),
+              path.resolve(path.join(layouts, `${data.layout}`)),
             ).toString()
             : null;
 
@@ -72,6 +90,9 @@ export const MarkdownPlugin = (layoutDirectory: string): DejamuPlugin => {
 
           await initAssets(build.initialOptions.outdir!);
           initializeConstantsForBuildTime(pageDirectory);
+          for (const plugin of plugins) {
+            plugin.onRender?.();
+          }
 
           const Layout: LayoutComponent = layoutPath
             ? (await import(layoutPath)).default
@@ -88,7 +109,7 @@ export const MarkdownPlugin = (layoutDirectory: string): DejamuPlugin => {
           await copyAssets();
 
           return {
-            namespace: "PreactPlugin",
+            namespace: "MarkdownPlugin",
             path: args.path,
             pluginData: await PluginSystem.build(
               islands,
