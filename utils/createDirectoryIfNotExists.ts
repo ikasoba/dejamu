@@ -2,6 +2,6 @@ export async function createDirectoryIfNotExists(path: string) {
   try {
     await Deno.mkdir(path, { recursive: true });
   } catch (e) {
-    if (!(e instanceof Deno.errors.NotFound)) throw e;
+    if (!(e instanceof Deno.errors.AlreadyExists)) throw e;
   }
 }
