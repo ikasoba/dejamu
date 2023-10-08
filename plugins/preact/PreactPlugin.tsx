@@ -8,6 +8,7 @@ import { getIslands } from "../islands/hooks.tsx";
 import * as PluginSystem from "../../pluginSystem/PluginSystem.ts";
 import { DejamuPlugin } from "../../pluginSystem/Plugin.ts";
 import { copyAssets, initAssets } from "../asset.ts";
+import { getHeadChildren } from "../Head.tsx";
 
 export const PreactPlugin = (): DejamuPlugin => {
   return {
@@ -61,6 +62,7 @@ export const PreactPlugin = (): DejamuPlugin => {
             body,
             htmlFilePath,
             jsFilePath,
+            getHeadChildren(),
           );
 
           await copyAssets();

@@ -12,6 +12,7 @@ import * as PluginSystem from "../../pluginSystem/PluginSystem.ts";
 import { DejamuPlugin } from "../../pluginSystem/Plugin.ts";
 import { copyAssets, initAssets } from "../asset.ts";
 import { Marked, MarkedExtension } from "../../deps/marked.ts";
+import { getHeadChildren } from "../Head.tsx";
 
 export type LayoutComponent = FunctionComponent<
   { data: Record<string, any>; children: string }
@@ -113,6 +114,7 @@ export const MarkdownPlugin = (
             body,
             htmlFilePath,
             jsFilePath,
+            getHeadChildren(),
           );
 
           await copyAssets();

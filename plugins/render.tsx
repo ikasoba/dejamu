@@ -1,4 +1,4 @@
-import { ComponentType, VNode } from "npm:preact";
+import { ComponentChild, ComponentType, VNode } from "npm:preact";
 import { getHeadChildren } from "./Head.tsx";
 import { render } from "npm:preact-render-to-string";
 import prepass from "npm:preact-ssr-prepass";
@@ -7,7 +7,8 @@ import * as path from "../deps/path.ts";
 export function template(
   body: string,
   globalData: Record<string, any>,
-  jsFilePath?: string,
+  jsFilePath: string | undefined,
+  head: ComponentChild[],
 ): string {
   const html = `<!doctype html>${
     render(
@@ -29,7 +30,7 @@ export function template(
               async
             />
           )}
-          {...getHeadChildren()}
+          {...head}
         </head>
         <body dangerouslySetInnerHTML={{ __html: body }} />
       </html>,
