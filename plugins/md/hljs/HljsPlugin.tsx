@@ -22,7 +22,7 @@ export function Hljslugin(
           ? hljs.highlight(code, { language: infostring })
           : hljs.highlightAuto(code);
 
-        return res.value;
+        return `<pre class="hljs"><code>${res.value}</code></pre>`;
       },
     },
   };
