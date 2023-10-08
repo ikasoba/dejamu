@@ -10,6 +10,7 @@ import { Island } from "../islands/registerIslands.ts";
 import { collectIslands } from "../collectIslands.ts";
 import * as PluginSystem from "../../pluginSystem/PluginSystem.ts";
 import { DejamuPlugin } from "../../pluginSystem/Plugin.ts";
+import { copyAssets, initAssets } from "../asset.ts";
 
 export type LayoutComponent = FunctionComponent<
   { data: Record<string, any>; children: string }
@@ -69,6 +70,7 @@ export const MarkdownPlugin = (layoutDirectory: string): DejamuPlugin => {
 
           jsFilePath = path.relative(path.dirname(htmlFilePath), jsFilePath);
 
+          await initAssets(build.initialOptions.outdir!);
           initializeConstantsForBuildTime(pageDirectory);
 
           const Layout: LayoutComponent = layoutPath
@@ -82,6 +84,8 @@ export const MarkdownPlugin = (layoutDirectory: string): DejamuPlugin => {
           );
 
           const islands = [...getIslands()];
+
+          await copyAssets();
 
           return {
             namespace: "PreactPlugin",
