@@ -2,6 +2,5 @@
 
 export { Head } from "./plugins/Head.tsx";
 export { revive } from "./plugins/islands/revive.tsx";
-export * from "./plugins/asset.ts";
 export type { Config } from "./builder/Config.ts";
 export type { DejamuPlugin } from "./pluginSystem/Plugin.ts";
