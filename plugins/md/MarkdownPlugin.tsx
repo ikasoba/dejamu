@@ -91,9 +91,6 @@ export const MarkdownPlugin = (
           jsFilePath = path.relative(path.dirname(htmlFilePath), jsFilePath);
 
           initializeConstantsForBuildTime(pageDirectory);
-          for (const plugin of plugins) {
-            plugin.onRender?.();
-          }
 
           const Layout: LayoutComponent = layoutPath
             ? (await import(layoutPath)).default
@@ -105,19 +102,25 @@ export const MarkdownPlugin = (
             </Layout>,
           );
 
+          for (const plugin of plugins) {
+            plugin.onRender?.();
+          }
+
           const islands = [...getIslands()];
+
+          const res = await PluginSystem.build(
+            islands,
+            body,
+            htmlFilePath,
+            jsFilePath,
+          );
 
           await copyAssets();
 
           return {
             namespace: "MarkdownPlugin",
             path: args.path,
-            pluginData: await PluginSystem.build(
-              islands,
-              body,
-              htmlFilePath,
-              jsFilePath,
-            ),
+            pluginData: res,
           };
         });
 
