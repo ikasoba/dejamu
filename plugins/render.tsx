@@ -1,5 +1,5 @@
 import { ComponentType, VNode } from "npm:preact";
-import { getHeadChildren, resetHeadChildren } from "./Head.tsx";
+import { getHeadChildren } from "./Head.tsx";
 import { render } from "npm:preact-render-to-string";
 import prepass from "npm:preact-ssr-prepass";
 import * as path from "../deps/path.ts";

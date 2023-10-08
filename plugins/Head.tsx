@@ -13,7 +13,6 @@ export interface HeadProps {
 
 let headChildren: ComponentChild[] = [];
 
-export const resetHeadChildren = () => headChildren = [];
 export const getHeadChildren = () => {
   const res = headChildren;
   headChildren = [];

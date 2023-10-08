@@ -45,7 +45,6 @@ export const PreactPlugin = (): DejamuPlugin => {
 
           jsFilePath = path.relative(path.dirname(htmlFilePath), jsFilePath);
 
-          await initAssets(build.initialOptions.outdir!);
           initializeConstantsForBuildTime(pageDirectory);
 
           const { default: Page }: { default: FunctionComponent } =
@@ -57,17 +56,19 @@ export const PreactPlugin = (): DejamuPlugin => {
 
           const islands = [...getIslands()];
 
+          const res = await PluginSystem.build(
+            islands,
+            body,
+            htmlFilePath,
+            jsFilePath,
+          );
+
           await copyAssets();
 
           return {
             namespace: "PreactPlugin",
             path: args.path,
-            pluginData: await PluginSystem.build(
-              islands,
-              body,
-              htmlFilePath,
-              jsFilePath,
-            ),
+            pluginData: res,
           };
         });
 
