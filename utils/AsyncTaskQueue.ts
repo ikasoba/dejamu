@@ -21,11 +21,13 @@ export class AsyncTaskQueue {
       for (let i = 0; this.queue.length && i < 50; i++) {
         const task = this.queue.pop()!;
 
+        console.log("start task", task.id);
         try {
           task.resolve(await task.task());
         } catch (e) {
           task.reject(e);
         }
+        console.log("end task", task.id);
       }
 
       setTimeout(fn, 100);

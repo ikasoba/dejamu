@@ -59,17 +59,15 @@ export const asset = (source: string) => {
         /^npm:/.test(source) ? source : await import.meta.resolve(source),
       );
 
-      let fileData: Uint8Array;
-
       if (url.protocol == "npm:") {
-        url = new URL(`https://cdn.jsdelivr.net/${url.pathname}`);
+        url = new URL(`https://cdn.jsdelivr.net/npm/${url.pathname}`);
       }
 
       const file = await cache(url);
 
       await Deno.copyFile(
-        path.join(outdir, assetDest),
         file.path,
+        path.join(outdir, assetDest),
       );
     });
 
