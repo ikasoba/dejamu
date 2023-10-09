@@ -4,7 +4,7 @@ import { MarkdownExtension } from "../MarkdownPlugin.tsx";
 import { appendHead } from "../../Head.tsx";
 import { asset } from "../../asset.ts";
 
-export function Hljslugin(
+export function HljsPlugin(
   { theme = "github-dark-dimmed" }: { theme?: string },
 ): MarkdownExtension {
   return {
