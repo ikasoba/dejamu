@@ -8,7 +8,6 @@ export function template(
   body: string,
   globalData: Record<string, any>,
   jsFilePath: string | undefined,
-  head: ComponentChild[],
 ): string {
   const html = `<!doctype html>${
     render(
@@ -30,7 +29,7 @@ export function template(
               async
             />
           )}
-          {...head}
+          {...getHeadChildren()}
         </head>
         <body dangerouslySetInnerHTML={{ __html: body }} />
       </html>,

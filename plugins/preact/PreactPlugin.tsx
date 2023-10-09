@@ -9,6 +9,7 @@ import * as PluginSystem from "../../pluginSystem/PluginSystem.ts";
 import { DejamuPlugin } from "../../pluginSystem/Plugin.ts";
 import { copyAssets, initAssets } from "../asset.ts";
 import { getHeadChildren } from "../Head.tsx";
+import { DejamuContext } from "../../builder/context.ts";
 
 export const PreactPlugin = (): DejamuPlugin => {
   return {
@@ -16,8 +17,6 @@ export const PreactPlugin = (): DejamuPlugin => {
     plugin: {
       name: "PreactPlugin",
       async setup(build) {
-        await initAssets(build.initialOptions.outdir!);
-
         build.onResolve({ filter: /\.[jt]sx$/ }, async (args) => {
           if (
             args.kind != "entry-point" ||
@@ -46,32 +45,32 @@ export const PreactPlugin = (): DejamuPlugin => {
 
           jsFilePath = path.relative(path.dirname(htmlFilePath), jsFilePath);
 
-          initializeConstantsForBuildTime(pageDirectory);
+          return await DejamuContext.current.tasks.run(async () => {
+            await initAssets(build.initialOptions.outdir!);
+            initializeConstantsForBuildTime(pageDirectory);
 
-          const { default: Page }: { default: FunctionComponent } =
-            await import(
-              path.toFileUrl(path.resolve(args.path)).toString()
-            );
+            const { default: Page }: { default: FunctionComponent } =
+              await import(
+                path.toFileUrl(path.resolve(args.path)).toString()
+              );
 
-          const body = renderToString(<Page />);
+            const body = renderToString(<Page />);
 
-          const islands = [...getIslands()];
+            const islands = [...getIslands()];
 
-          const res = await PluginSystem.build(
-            islands,
-            body,
-            htmlFilePath,
-            jsFilePath,
-            getHeadChildren(),
-          );
+            await copyAssets();
 
-          await copyAssets();
-
-          return {
-            namespace: "PreactPlugin",
-            path: args.path,
-            pluginData: res,
-          };
+            return {
+              namespace: "PreactPlugin",
+              path: args.path,
+              pluginData: await PluginSystem.build(
+                islands,
+                body,
+                htmlFilePath,
+                jsFilePath,
+              ),
+            };
+          });
         });
 
         build.onLoad(
