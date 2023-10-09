@@ -6,6 +6,7 @@ import { getOption } from "./option.ts";
 import { ArgsType, RemovePrefix } from "../utils/types.ts";
 import { DejamuPlugin } from "../pluginSystem/Plugin.ts";
 import { PreBuildScript } from "./PreBuildScript.ts";
+import { AsyncTaskQueue } from "../utils/AsyncTaskQueue.ts";
 
 export class DejamuContext {
   static current: DejamuContext;
@@ -33,12 +34,16 @@ export class DejamuContext {
     );
   }
 
+  public tasks = new AsyncTaskQueue();
+
   private constructor(
     private config: Config,
     private esbuildOption: BuildOptions,
     private esbuildPlugins: EsbuildPlugin[],
     private dejamuPlugins: DejamuPluginBase[],
-  ) {}
+  ) {
+    this.tasks.runTaskRunner();
+  }
 
   async addPlugins(...plugins: DejamuPlugin[]) {
     for (const plugin of plugins) {

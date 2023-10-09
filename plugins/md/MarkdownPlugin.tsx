@@ -13,6 +13,7 @@ import { DejamuPlugin } from "../../pluginSystem/Plugin.ts";
 import { copyAssets, initAssets } from "../asset.ts";
 import { Marked, MarkedExtension } from "../../deps/marked.ts";
 import { getHeadChildren } from "../Head.tsx";
+import { DejamuContext } from "../../builder/context.ts";
 
 export type LayoutComponent = FunctionComponent<
   { data: Record<string, any>; children: string }
@@ -59,8 +60,6 @@ export const MarkdownPlugin = (
     plugin: {
       name: "MarkdownPlugin",
       async setup(build) {
-        await initAssets(build.initialOptions.outdir!);
-
         build.onResolve({ filter: /\.md$/ }, async (args) => {
           const { data, markdownBody } = await loadMarkdown(args.path);
 
@@ -91,39 +90,39 @@ export const MarkdownPlugin = (
 
           jsFilePath = path.relative(path.dirname(htmlFilePath), jsFilePath);
 
-          initializeConstantsForBuildTime(pageDirectory);
+          return await DejamuContext.current.tasks.run(async () => {
+            await initAssets(build.initialOptions.outdir!);
+            initializeConstantsForBuildTime(pageDirectory);
 
-          const Layout: LayoutComponent = layoutPath
-            ? (await import(layoutPath)).default
-            : EmptyLayout;
+            const Layout: LayoutComponent = layoutPath
+              ? (await import(layoutPath)).default
+              : EmptyLayout;
 
-          const body = render(
-            <Layout data={data}>
-              {markdownBody}
-            </Layout>,
-          );
+            const body = render(
+              <Layout data={data}>
+                {markdownBody}
+              </Layout>,
+            );
 
-          for (const plugin of plugins) {
-            plugin.onRender?.();
-          }
+            for (const plugin of plugins) {
+              plugin.onRender?.();
+            }
 
-          const islands = [...getIslands()];
+            const islands = [...getIslands()];
 
-          const res = await PluginSystem.build(
-            islands,
-            body,
-            htmlFilePath,
-            jsFilePath,
-            getHeadChildren(),
-          );
+            await copyAssets();
 
-          await copyAssets();
-
-          return {
-            namespace: "MarkdownPlugin",
-            path: args.path,
-            pluginData: res,
-          };
+            return {
+              namespace: "MarkdownPlugin",
+              path: args.path,
+              pluginData: await PluginSystem.build(
+                islands,
+                body,
+                htmlFilePath,
+                jsFilePath,
+              ),
+            };
+          });
         });
 
         build.onLoad(

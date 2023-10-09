@@ -12,7 +12,6 @@ export async function build(
   body: string,
   htmlFilePath: string,
   jsFilePath: string,
-  head: ComponentChild[],
 ): Promise<OnLoadResult> {
   const script: PreBuildScript = { head: [], body: [], footer: [] };
 
@@ -45,7 +44,6 @@ export async function build(
         projectRoot: globalThis.projectRoot,
       },
       undefined,
-      head,
     );
 
     await putTextFile(htmlFilePath, html);
@@ -62,7 +60,6 @@ export async function build(
         projectRoot: globalThis.projectRoot,
       },
       jsFilePath,
-      head,
     );
 
     await putTextFile(htmlFilePath, html);
