@@ -1,7 +1,6 @@
 import * as path from "../deps/path.ts";
 import * as semver from "../deps/semver.ts";
 import { createDirectoryIfNotExists } from "../utils/createDirectoryIfNotExists.ts";
-import { getDenoCacheInfo } from "../utils/denoCache.ts";
 import {
   asyncIterableIteratorToArray,
   asyncIterableToArray,
