@@ -8,7 +8,7 @@ layout: DejamuPage.tsx
   </p>
 </h1>
 
-<section class="center-box card-list">
+<section class="center-box card-list" style="flex-direction: row; justify-content: center;">
   <article class="card">
     <h2><a href="https://github.com/ikasoba/dejamu/tree/main/plugins/preact">
     Preact Plugin
@@ -33,6 +33,15 @@ layout: DejamuPage.tsx
     </a></h2>
     <p>
     This plugin can be used to use Markdown in Dejamu.
+    </p>
+  </article>
+
+  <article class="card">
+    <h2><a href="https://github.com/ikasoba/dejamu/tree/main/plugins/md/hljs">
+    Highlight.js Plugin
+    </a></h2>
+    <p>
+    This plugin can be used to highlight code blocks in markdown.
     </p>
   </article>
 
