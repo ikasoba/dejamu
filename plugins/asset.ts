@@ -8,8 +8,7 @@ import {
 } from "../utils/glob.ts";
 import { createIdGenerator } from "../utils/id.ts";
 import { Awaitable } from "../utils/types.ts";
-
-const cacheInfo = await getDenoCacheInfo();
+import { cache } from "https://deno.land/x/cache/mod.ts";
 
 let assetPair: Map<string, string>;
 let genId: () => string;
@@ -63,69 +62,15 @@ export const asset = (source: string) => {
 
       let fileData: Uint8Array;
 
-      // npmであればキャッシュから取る
       if (url.protocol == "npm:") {
-        const pattern = /^\/?([^/@]+|@[^/@]+\/[^/@]+)(?:@([^/]+))?/;
-
-        const pathname = url.pathname.replace(
-          pattern,
-          "",
-        );
-        const moduleNameAndVersion = url.pathname.match(
-          pattern,
-        );
-
-        if (moduleNameAndVersion == null) {
-          throw new Error(`cannot parse npm package name. ${url.pathname}`);
-        }
-
-        let [_, moduleName, moduleVersion] = moduleNameAndVersion;
-
-        if (moduleVersion == null) {
-          const rawVersions = await asyncIterableToArray(
-            Deno.readDir(
-              path.join(cacheInfo.npm, "registry.npmjs.org", moduleName),
-            ),
-          );
-          const versions = rawVersions
-            .map((x) => {
-              try {
-                return semver.parse(x.name);
-              } catch {
-                return null;
-              }
-            })
-            .filter((x): x is semver.SemVer => x != null);
-
-          moduleVersion = semver.format(
-            versions.sort((
-              a,
-              b,
-            ) => -semver.gt(a, b))[0],
-          );
-        }
-
-        fileData = await Deno.readFile(
-          path.join(
-            cacheInfo.npm,
-            "registry.npmjs.org",
-            moduleName,
-            moduleVersion,
-            pathname,
-          ),
-        );
-      } else {
-        const res = await fetch(url);
-        if (!res.ok) {
-          throw await res.text();
-        }
-
-        fileData = new Uint8Array(await res.arrayBuffer());
+        url = new URL(`https://cdn.jsdelivr.net/${url.pathname}`);
       }
 
-      await Deno.writeFile(
+      const file = await cache(url);
+
+      await Deno.copyFile(
         path.join(outdir, assetDest),
-        fileData,
+        file.path,
       );
     });
 
