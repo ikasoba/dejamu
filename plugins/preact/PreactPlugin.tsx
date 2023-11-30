@@ -1,15 +1,18 @@
+import "../islands/hooks.tsx";
+
 import { FunctionComponent } from "npm:preact/";
 import { renderToString } from "npm:preact-render-to-string/";
 import * as path from "../../deps/path.ts";
 import { initializeConstantsForBuildTime } from "../constants.ts";
 
-import "../islands/hooks.tsx";
 import { getIslands } from "../islands/hooks.tsx";
 import * as PluginSystem from "../../pluginSystem/PluginSystem.ts";
 import { DejamuPlugin } from "../../pluginSystem/Plugin.ts";
 import { copyAssets, initAssets } from "../asset.ts";
 import { getHeadChildren } from "../Head.tsx";
 import { DejamuContext } from "../../builder/context.ts";
+import { collectPromises } from "../../hooks/useAsync.ts";
+import { resetMemoContext, resetMemos } from "../../utils/onceMemo.ts";
 
 export const PreactPlugin = (): DejamuPlugin => {
   return {
@@ -48,13 +51,23 @@ export const PreactPlugin = (): DejamuPlugin => {
           return await DejamuContext.current.tasks.run(async () => {
             await initAssets(build.initialOptions.outdir!);
             initializeConstantsForBuildTime(pageDirectory);
+            resetMemos();
 
             const { default: Page }: { default: FunctionComponent } =
               await import(
                 path.toFileUrl(path.resolve(args.path)).toString()
               );
 
-            const body = renderToString(<Page />);
+            const node = <Page />;
+
+            resetMemoContext();
+            renderToString(
+              node,
+            );
+            await Promise.all(collectPromises());
+
+            resetMemoContext();
+            const body = renderToString(node);
 
             const islands = [...getIslands()];
 

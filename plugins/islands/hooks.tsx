@@ -18,13 +18,19 @@ let islands: Set<Island> = new Set();
 
 let nodeStack: VNode[] = [];
 
-let islandsNestLevel: number = 0;
+let islandsNestLevel = 0;
 
 export const getIslands = () => {
   const res = islands;
   islands = new Set();
 
   return res;
+};
+
+export const initHooks = () => {
+  islandsNestLevel = 0;
+  nodeStack = [];
+  islands = new Set();
 };
 
 const patched = new WeakSet<VNode>();
@@ -47,6 +53,7 @@ options.__b = (vnode) => {
     patched.add(vnode);
     islands.add(island);
 
+    console.log("マーキング");
     const Component = vnode.type as ComponentType<any>;
     vnode.type = ((props: any) => {
       const res = <Component {...props} />;

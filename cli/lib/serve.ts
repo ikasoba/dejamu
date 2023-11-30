@@ -91,12 +91,7 @@ export const serve = async (port: number) => {
       recursive: true,
     });
 
-    const ignoredItems = [
-      ".out",
-      ".git",
-      ".vscode",
-      ".github",
-    ];
+    const ignoredItems = [".out", ".git", ".vscode", ".github"];
 
     const notifiers = new Set();
     let prevEventRecieved = 0;
@@ -109,11 +104,12 @@ export const serve = async (port: number) => {
       prevEventRecieved = Date.now();
 
       if (
-        event.paths.filter((x) =>
-          !(
-            ignoredItems.some((y) => path.relative(".", x).startsWith(y)) ||
-            notifiers.has(x)
-          )
+        event.paths.filter(
+          (x) =>
+            !(
+              ignoredItems.some((y) => path.relative(".", x).startsWith(y)) ||
+              notifiers.has(x)
+            )
         ).length
       ) {
         for (const p of event.paths) {
@@ -133,7 +129,5 @@ export const serve = async (port: number) => {
     }
   });
 
-  console.log(
-    `Waiting for connection at http://localhost:${port}/`,
-  );
+  console.log(`Waiting for connection at http://localhost:${port}/`);
 };

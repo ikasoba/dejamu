@@ -10,8 +10,7 @@ export async function main() {
       serve: "deno task dejamu serve",
     },
     imports: {
-      "dejamu/":
-        `https://raw.githubusercontent.com/ikasoba/dejamu/${pkg.version}/`,
+      "dejamu/": `https://raw.githubusercontent.com/ikasoba/dejamu/${pkg.version}/`,
     },
     compilerOptions: {
       jsx: "react-jsx",
@@ -27,12 +26,14 @@ export default {
   entryPoints: ["pages/**/*.{jsx,tsx,md}"],
   plugins: [
     PreactPlugin(),
-    MarkdownPlugin("layouts/"),
+    MarkdownPlugin({
+      layouts: "layouts/",
+    }),
   ],
 } satisfies Config;`;
 
   const welcomeToDejamu = await fetch(
-    new URL("./welcome-to-dejamu.tsx", import.meta.url),
+    new URL("./welcome-to-dejamu.tsx", import.meta.url)
   ).then((x) => x.text());
 
   await Deno.writeTextFile("./deno.json", JSON.stringify(denoFile, null, "  "));

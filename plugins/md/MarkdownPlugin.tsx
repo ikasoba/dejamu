@@ -1,11 +1,13 @@
+import "../islands/hooks.tsx";
+
 import { Plugin } from "../../deps/esbuild.ts";
 import { FunctionComponent } from "npm:preact/";
-import { render } from "npm:preact-render-to-string/";
+import { renderToString } from "npm:preact-render-to-string/";
 import * as path from "../../deps/path.ts";
 import * as FrontMatter from "../../deps/front_matter.ts";
 import { EmptyLayout } from "./EmptyLayout.tsx";
 import { initializeConstantsForBuildTime } from "../constants.ts";
-import { getIslands } from "../islands/hooks.tsx";
+import { getIslands, initHooks } from "../islands/hooks.tsx";
 import { Island } from "../islands/registerIslands.ts";
 import { collectIslands } from "../collectIslands.ts";
 import * as PluginSystem from "../../pluginSystem/PluginSystem.ts";
@@ -14,6 +16,8 @@ import { copyAssets, initAssets } from "../asset.ts";
 import { Marked, MarkedExtension } from "../../deps/marked.ts";
 import { getHeadChildren } from "../Head.tsx";
 import { DejamuContext } from "../../builder/context.ts";
+import { collectPromises } from "../../hooks/useAsync.ts";
+import { resetMemoContext, resetMemos } from "../../utils/onceMemo.ts";
 
 export type LayoutComponent = FunctionComponent<
   { data: Record<string, any>; children: string }
@@ -93,15 +97,28 @@ export const MarkdownPlugin = (
           return await DejamuContext.current.tasks.run(async () => {
             await initAssets(build.initialOptions.outdir!);
             initializeConstantsForBuildTime(pageDirectory);
+            resetMemos();
+            initHooks();
 
             const Layout: LayoutComponent = layoutPath
               ? (await import(layoutPath)).default
               : EmptyLayout;
 
-            const body = render(
+            const node = (
               <Layout data={data}>
                 {markdownBody}
-              </Layout>,
+              </Layout>
+            );
+
+            resetMemoContext();
+            renderToString(
+              node,
+            );
+            await Promise.all(collectPromises());
+
+            resetMemoContext();
+            const body = renderToString(
+              node,
             );
 
             for (const plugin of plugins) {
