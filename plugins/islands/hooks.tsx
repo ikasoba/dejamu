@@ -53,7 +53,6 @@ options.__b = (vnode) => {
     patched.add(vnode);
     islands.add(island);
 
-    console.log("マーキング");
     const Component = vnode.type as ComponentType<any>;
     vnode.type = ((props: any) => {
       const res = <Component {...props} />;
