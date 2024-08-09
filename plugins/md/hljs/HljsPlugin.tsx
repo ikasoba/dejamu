@@ -1,5 +1,5 @@
 import renderToString from "npm:preact-render-to-string";
-import hljs from "npm:highlight.js";
+import hljs from "npm:highlight.js@11.10.0";
 import { MarkdownExtension } from "../MarkdownPlugin.tsx";
 import { appendHead } from "../../Head.tsx";
 import { asset } from "../../asset.ts";
@@ -17,10 +17,10 @@ export function HljsPlugin(
       );
     },
     renderer: {
-      code(code, infostring, escaped) {
-        const res = infostring
-          ? hljs.highlight(code, { language: infostring })
-          : hljs.highlightAuto(code);
+      code(code) {
+        const res = code.lang
+          ? hljs.highlight(code.text, { language: code.lang })
+          : hljs.highlightAuto(code.text);
 
         return `<pre class="hljs"><code>${res.value}</code></pre>`;
       },
