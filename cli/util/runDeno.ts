@@ -6,9 +6,7 @@ export async function runDeno(code: string) {
 
   const writer = proc.stdin.getWriter();
 
-  await writer.write(
-    new TextEncoder().encode(code),
-  );
+  await writer.write(new TextEncoder().encode(code));
 
   await writer.close();
 

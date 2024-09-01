@@ -1,10 +1,5 @@
 import * as path from "../deps/path.ts";
-import * as semver from "../deps/semver.ts";
 import { createDirectoryIfNotExists } from "../utils/createDirectoryIfNotExists.ts";
-import {
-  asyncIterableIteratorToArray,
-  asyncIterableToArray,
-} from "../utils/glob.ts";
 import { createIdGenerator } from "../utils/id.ts";
 import { Awaitable } from "../utils/types.ts";
 import { cache } from "https://deno.land/x/cache/mod.ts";
@@ -36,12 +31,15 @@ export const asset = (source: string) => {
 
     if (assetPair.has(source)) return assetPair.get(source)!;
 
-    const extname = path.extname(source);
-    const assetDest = `__assets__/${genId()}${extname}`;
+    const assetDest = source;
     const assetPath = path.join(projectRoot, assetDest);
     assetPair.set(source, assetPath);
 
     queuedBatches.push(async () => {
+      await Deno.mkdir(path.dirname(path.join(outdir, assetDest)), {
+        recursive: true,
+      });
+
       await Deno.copyFile(`.${source}`, path.join(outdir, assetDest));
     });
 
@@ -56,7 +54,7 @@ export const asset = (source: string) => {
 
     queuedBatches.push(async () => {
       let url = new URL(
-        /^npm:/.test(source) ? source : await import.meta.resolve(source),
+        /^npm:/.test(source) ? source : await import.meta.resolve(source)
       );
 
       if (url.protocol == "npm:") {
@@ -65,10 +63,7 @@ export const asset = (source: string) => {
 
       const file = await cache(url);
 
-      await Deno.copyFile(
-        file.path,
-        path.join(outdir, assetDest),
-      );
+      await Deno.copyFile(file.path, path.join(outdir, assetDest));
     });
 
     return assetPath;

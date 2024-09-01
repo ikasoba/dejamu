@@ -1,7 +1,5 @@
-import { VNode } from "npm:preact";
-import { DejamuContext } from "../builder/context.ts";
 import { Awaitable } from "../utils/types.ts";
-import { PreBuildScript } from "../builder/PreBuildScript.ts";
+import { PreBuildScript } from "../core/PreBuildScript.ts";
 
 export interface DejamuPluginBase {
   /**
@@ -19,6 +17,6 @@ export interface DejamuPluginBase {
     /**
      * htmlファイルに書き込まれるJSファイル
      */
-    script: PreBuildScript,
+    script: PreBuildScript
   ): Awaitable<string | null | void>;
 }

@@ -1,4 +1,3 @@
-import { Config } from "../builder/Config.ts";
 import pkg from "../depm.json" assert { type: "json" };
 
 export async function main() {

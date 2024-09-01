@@ -1,18 +1,9 @@
-import { DejamuContext } from "../../builder/context.ts";
-import { BuildContext, context } from "../../deps/esbuild.ts";
 import * as path from "../../deps/path.ts";
-import {
-  filterIslandsFiles,
-  initIslandsState,
-  registerIslands,
-} from "../../plugins/islands/registerIslands.ts";
 import * as http from "../../deps/http.ts";
 import { contentType } from "../../deps/media_types.ts";
-import { build } from "./build.ts";
-import { HotReloadPlugin } from "../../plugins/hotReload/HotReloadPlugin.ts";
-import { Source } from "../generator/Source.ts";
-import { genContext } from "../generator/genContext.ts";
 import { genBuildCode } from "../generator/genBuildCode.ts";
+import { genContext } from "../generator/genContext.ts";
+import { Source } from "../generator/Source.ts";
 import { runDeno } from "../util/runDeno.ts";
 
 async function runBuildTask() {
@@ -30,8 +21,11 @@ async function runBuildTask() {
 }
 
 export const serve = async (port: number) => {
-  initIslandsState();
-  await registerIslands("./");
+  try {
+    await Deno.remove("./.out", { recursive: true });
+  } catch (e) {
+    if (e?.code != "ENOENT") throw e;
+  }
 
   const webSocketClients: Set<WebSocket> = new Set();
 
@@ -69,6 +63,7 @@ export const serve = async (port: number) => {
         return new Response(body, {
           status: 200,
           headers: {
+            "Access-Control-Allow-Origin": "*",
             "Content-Type": mime,
           },
         });
@@ -86,48 +81,48 @@ export const serve = async (port: number) => {
 
   await runBuildTask();
 
-  queueMicrotask(async () => {
-    const watcher = Deno.watchFs(".", {
-      recursive: true,
-    });
+  console.log(`Waiting for connection at http://localhost:${port}/`);
 
-    const ignoredItems = [".out", ".git", ".vscode", ".github"];
+  const watcher = Deno.watchFs(".", {
+    recursive: true,
+  });
 
-    const notifiers = new Set();
-    let prevEventRecieved = 0;
+  const ignoredItems = [".out", ".git", ".vscode", ".github"];
 
-    for await (const event of watcher) {
-      if (Date.now() - prevEventRecieved < 1500) {
-        continue;
+  const notifiers = new Set();
+  let prevEventRecieved = 0;
+
+  for await (const event of watcher) {
+    if (Date.now() - prevEventRecieved < 1500) {
+      continue;
+    }
+
+    prevEventRecieved = Date.now();
+
+    if (
+      event.paths.some(
+        (x) =>
+          !(
+            ignoredItems.some((y) => path.relative(".", x).startsWith(y)) ||
+            notifiers.has(x)
+          )
+      )
+    ) {
+      for (const p of event.paths) {
+        notifiers.add(p);
+
+        setTimeout(() => {
+          notifiers.delete(p);
+        }, 1500);
       }
 
-      prevEventRecieved = Date.now();
-
-      if (
-        event.paths.filter(
-          (x) =>
-            !(
-              ignoredItems.some((y) => path.relative(".", x).startsWith(y)) ||
-              notifiers.has(x)
-            )
-        ).length
-      ) {
-        for (const p of event.paths) {
-          notifiers.add(p);
-
-          setTimeout(() => {
-            notifiers.delete(p);
-          }, 1500);
-        }
-
+      queueMicrotask(async () => {
         await runBuildTask();
 
         for (const socket of webSocketClients) {
-          if (socket.readyState == 1) await socket.send("reload");
+          if (socket.readyState == WebSocket.OPEN) await socket.send("reload");
         }
-      }
+      });
     }
-  });
-
-  console.log(`Waiting for connection at http://localhost:${port}/`);
+  }
 };

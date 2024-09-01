@@ -1,13 +1,12 @@
 import {
-  Component,
   ComponentType,
   Fragment,
   options as _options,
   VNode,
 } from "npm:preact";
-import { getIslandsState, Island } from "./registerIslands.ts";
+import { getIslandsState, Island } from "./islands.ts";
 import { serialize } from "./serialize.ts";
-import { escapeHTML } from "../../utils/escapeHTML.ts";
+import { escapeHTML } from "../../../utils/escapeHTML.ts";
 
 const options: (typeof _options) & {
   __b?(node: VNode): void;

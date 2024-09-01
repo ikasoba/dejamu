@@ -1,1 +1,0 @@
-**This plugin is not a plugin for Dejamu.**
