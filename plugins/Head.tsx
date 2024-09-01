@@ -1,11 +1,4 @@
-import {
-  StateUpdater,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "npm:preact/hooks";
-import { ComponentChild, ComponentChildren, createContext } from "npm:preact/";
+import { ComponentChild, ComponentChildren } from "npm:preact/";
 
 export interface HeadProps {
   children: ComponentChildren;

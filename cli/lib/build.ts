@@ -1,10 +1,4 @@
-import { DejamuContext } from "../../builder/context.ts";
-import { BuildContext, context } from "../../deps/esbuild.ts";
-import {
-  filterIslandsFiles,
-  initIslandsState,
-  registerIslands,
-} from "../../plugins/islands/registerIslands.ts";
+import { DejamuContext } from "../../core/context.ts";
 
 export const build = async (ctx: DejamuContext) => {
   try {
@@ -12,9 +6,6 @@ export const build = async (ctx: DejamuContext) => {
   } catch (e) {
     if (e?.code != "ENOENT") throw e;
   }
-
-  initIslandsState();
-  await registerIslands("./");
 
   console.log("building...");
 
@@ -29,6 +20,8 @@ export const build = async (ctx: DejamuContext) => {
   }
 
   console.log("build complete!");
+
+  await ctx.dispose();
 
   Deno.exit(0);
 };

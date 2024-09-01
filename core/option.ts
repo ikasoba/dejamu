@@ -6,9 +6,9 @@ import * as path from "../deps/path.ts";
 
 export const getOption = async (config: Config, plugins: EsbuildPlugin[]) => {
   const esbuildOptions: BuildOptions = {
-    entryPoints: (await Promise.all(
-      config.entryPoints.map((x) => glob(x)),
-    )).flat().map((x) => path.relative(Deno.cwd(), x.path)),
+    entryPoints: (await Promise.all(config.entryPoints.map((x) => glob(x))))
+      .flat()
+      .map((x) => path.relative(Deno.cwd(), x.path)),
     target: "es2020",
     plugins: [
       ...plugins,
@@ -21,12 +21,11 @@ export const getOption = async (config: Config, plugins: EsbuildPlugin[]) => {
     splitting: true,
     treeShaking: true,
     minify: true,
-
     platform: "browser",
     jsx: "automatic",
     jsxImportSource: "npm:preact",
     define: {
-      "isBrowser": "true",
+      isBrowser: "true",
     },
   };
 

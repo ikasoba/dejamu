@@ -1,4 +1,3 @@
-import renderToString from "npm:preact-render-to-string";
 import hljs from "npm:highlight.js@11.10.0";
 import { MarkdownExtension } from "../MarkdownPlugin.tsx";
 import { appendHead } from "../../Head.tsx";

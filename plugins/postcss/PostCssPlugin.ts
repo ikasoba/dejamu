@@ -1,11 +1,10 @@
-import { Plugin } from "../../deps/esbuild.ts";
-import postcss from "https://esm.sh/postcss@8.4.31";
+import postcss from "npm:postcss@^8";
 import * as path from "../../deps/path.ts";
 import { DejamuPlugin } from "../../pluginSystem/Plugin.ts";
 
 export const PostCssPlugin = (
   extensions: string[],
-  plugins: postcss.AcceptedPlugin[] = [],
+  plugins: postcss.AcceptedPlugin[] = []
 ): DejamuPlugin => {
   const processor = postcss(plugins);
 
@@ -14,19 +13,14 @@ export const PostCssPlugin = (
     plugin: {
       name: "PostCssPlugin",
       setup(build) {
-        build.onResolve(
-          { filter: /.*/ },
-          (args) => {
-            if (
-              extensions.includes(path.extname(args.path))
-            ) {
-              return {
-                namespace: "PostCssPlugin",
-                path: args.path,
-              };
-            }
-          },
-        );
+        build.onResolve({ filter: /.*/ }, (args) => {
+          if (extensions.includes(path.extname(args.path))) {
+            return {
+              namespace: "PostCssPlugin",
+              path: args.path,
+            };
+          }
+        });
 
         build.onLoad(
           { filter: /.*/, namespace: "PostCssPlugin" },
@@ -39,7 +33,7 @@ export const PostCssPlugin = (
               contents: res.css,
               loader: "copy",
             };
-          },
+          }
         );
       },
     },

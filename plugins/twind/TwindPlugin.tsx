@@ -1,6 +1,5 @@
 import { css, extract, setup, tw, TwindConfig } from "@twind/core";
 import * as path from "../../deps/path.ts";
-import * as fs from "../../deps/fs.ts";
 import { DejamuPlugin } from "../../pluginSystem/Plugin.ts";
 import { appendHead } from "../Head.tsx";
 import { glob } from "../../utils/glob.ts";

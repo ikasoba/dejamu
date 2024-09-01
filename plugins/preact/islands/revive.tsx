@@ -1,6 +1,6 @@
 import { ComponentType, hydrate } from "npm:preact";
 import { deserialize } from "./serialize.ts";
-import { unescapeHTML } from "../../utils/escapeHTML.ts";
+import { unescapeHTML } from "../../../utils/escapeHTML.ts";
 
 export function revive(
   islands: Record<string, ComponentType<any>>,
