@@ -1,4 +1,4 @@
-import pkg from "../depm.json" assert { type: "json" };
+import pkg from "../depm.json" with { type: "json" };
 
 export async function main() {
   const denoFile = {

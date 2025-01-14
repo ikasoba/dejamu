@@ -5,43 +5,53 @@ import * as path from "../../deps/path.ts";
 import { initializeConstantsForBuildTime } from "../constants.ts";
 
 import { getIslands } from "./islands/hooks.tsx";
-import { DejamuPlugin } from "../../pluginSystem/Plugin.ts";
+import { DejamuPlugin } from "../../core/plugins/Plugin.ts";
 import { copyAssets, initAssets } from "../asset.ts";
 import { DejamuContext } from "../../core/context.ts";
 import { renderToStringAsync } from "../../deps/preact-render-to-string.ts";
-import {
-  collectIslands,
-  initIslandsState,
-  Island,
-  registerIslands,
-} from "./islands/islands.ts";
+import { collectIslands, Island, replaceIsland } from "./islands/islands.ts";
 import { template } from "../render.tsx";
-import { putTextFile } from "../../utils/putTextFile.ts";
 import { OnLoadResult } from "../../deps/esbuild.ts";
 import { PreBuildScript } from "../../core/PreBuildScript.ts";
+import { defaultHooks, dynamicImport } from "../../utils/dynamicImport.ts";
+import { encodeBase64 } from "https://deno.land/std@0.203.0/encoding/base64.ts";
 
 async function render(
-  islands: Island[],
+  modulePath: string,
+  islands: Omit<Island, "component">[],
   body: string,
   htmlFilePath: string,
   jsFilePath: string,
+  replacer?: Promise<(html: string) => string>,
 ): Promise<OnLoadResult> {
   const script: PreBuildScript = { head: [], body: [], footer: [] };
 
   if (islands.length) {
-    const { head: islandsHead, reviveArg } = collectIslands(islands);
+    script.hasIslands = true;
+    
+    const { reviveArg } = collectIslands(islands);
 
-    script.head.push('import {revive} from "dejamu/mod.ts"');
-    script.head.push(islandsHead);
+    script.head.push(
+      'import { revive } from "dejamu/plugins/preact/islands/revive.tsx"',
+    );
+
+    script.head.push(
+      'import { adaptRouter } from "dejamu/plugins/preact/router/Router.ts"',
+    );
+
     script.footer.push(
-      'window.addEventListener("load", () => {' +
-        '  console.log("start partial hydrate");' +
-        `  revive(${reviveArg}, document.body);` +
-        "})",
+      "adaptRouter();" +
+        `const reviveArg = ${reviveArg};` +
+        'window.addEventListener("load", function doRevive() {' +
+        '  console.time("dejamu pre hydrate");' +
+        `  revive(reviveArg, document.body);` +
+        '  console.timeEnd("dejamu pre hydrate");' +
+        '  window.removeEventListener("load", doRevive);' +
+        "});",
     );
   }
 
-  body = await DejamuContext.current.dispatchRender(body, script);
+  body = await DejamuContext.current.dispatchRender(body, script, modulePath);
 
   const jsFile = [
     script.head.join(";"),
@@ -61,7 +71,13 @@ async function render(
       undefined,
     );
 
-    await putTextFile(htmlFilePath, html);
+    if (replacer) {
+      replacer.then(async (fn) => {
+        await DejamuContext.current.features.fs.writeTextFile(htmlFilePath, fn(html));
+      });
+    } else {
+      await DejamuContext.current.features.fs.writeTextFile(htmlFilePath, html);
+    }
 
     return {
       loader: "empty",
@@ -77,7 +93,13 @@ async function render(
       jsFilePath,
     );
 
-    await putTextFile(htmlFilePath, html);
+    if (replacer) {
+      replacer.then(async (fn) => {
+        await DejamuContext.current.features.fs.writeTextFile(htmlFilePath, fn(html));
+      });
+    } else {
+      await DejamuContext.current.features.fs.writeTextFile(htmlFilePath, html);
+    }
 
     return {
       loader: "tsx",
@@ -87,24 +109,36 @@ async function render(
 }
 
 export const PreactPlugin = (): DejamuPlugin => {
+  defaultHooks.onResolved = (path, mod) => {
+    if (/\.islands\.[tj]sx?$/.test(path)) {
+      replaceIsland(path, mod);
+    }
+  };
+
+  defaultHooks.onReloaded = () => {
+    cache.clear();
+  }
+
+  const cache = new Map<string, {
+    inputs: unknown[];
+    result: OnLoadResult;
+  }>();
+
   return {
     type: "esbuild",
     plugin: {
       name: "PreactPlugin",
       setup(build) {
-        build.onStart(() => {
-          initIslandsState();
-          registerIslands(".");
-        });
+        const queue: (() => Promise<void> | void)[] = [];
 
-        build.onResolve({ filter: /.*/ }, async (args) => {
+        build.onResolve({ filter: /^/ }, async (args) => {
           if (
             args.kind != "entry-point"
           ) return;
 
           if (
             !(args.path.match(/\.[jt]sx$/) ||
-              typeof args.pluginData?.PageGetter == "function")
+              typeof args.pluginData?.Page == "function")
           ) return;
 
           let jsFilePath = path.join(
@@ -113,6 +147,8 @@ export const PreactPlugin = (): DejamuPlugin => {
             path.basename(args.path, path.extname(args.path)),
           ) +
             ".js";
+
+          const rawJsFilePath = jsFilePath;
 
           const htmlFilePath = path.join(
             build.initialOptions.outdir ?? "./",
@@ -129,15 +165,30 @@ export const PreactPlugin = (): DejamuPlugin => {
           jsFilePath = path.relative(path.dirname(htmlFilePath), jsFilePath);
 
           return await DejamuContext.current.tasks.run(async () => {
+            const cached = cache.get(args.path);
+
+            const inputs = Array.isArray(args.pluginData?.inputs)
+              ? args.pluginData.inputs
+              : [encodeBase64(await DejamuContext.current.features.fs.readFile(args.path))];
+
+            if (
+              cached && cached.inputs.length == inputs.length && cached.inputs.every((x, i) => x == inputs[i])
+            ) {
+              return {
+                namespace: "PreactPlugin",
+                path: args.path,
+                pluginData: cached.result,
+              };
+            }
+
             await initAssets(build.initialOptions.outdir!);
             initializeConstantsForBuildTime(pageDirectory);
 
-            const { default: Page }: { default: FunctionComponent } =
-              typeof args.pluginData?.PageGetter == "function"
-                ? { default: await args.pluginData.PageGetter() }
-                : await import(
-                  path.toFileUrl(path.resolve(args.path)).toString() + "?" +
-                    Date.now()
+            const { default: Page }: { default: FunctionComponent} =
+              typeof args.pluginData?.Page == "function"
+                ? { default: await args.pluginData.Page }
+                : await dynamicImport(
+                  path.toFileUrl(path.resolve(args.path)).toString(),
                 );
 
             const node = <Page />;
@@ -148,25 +199,78 @@ export const PreactPlugin = (): DejamuPlugin => {
 
             await copyAssets();
 
+            const replacer = new Promise<(html: string) => string>(
+              (resolve) => {
+                queue.push(async () => {
+                  const res = await build.esbuild.build({
+                    entryPoints: [rawJsFilePath],
+                    write: false,
+                    bundle: true,
+                    metafile: true,
+                  });
+
+                  const resolveFilePath = (filePath: string) => {
+                    return path.relative(path.dirname(htmlFilePath), filePath);
+                  };
+
+                  const preloads = await renderToStringAsync(
+                    <script
+                      id="__DJM_PRELOADS__"
+                      type="application/json"
+                      dangerouslySetInnerHTML={{
+                        __html: JSON.stringify(
+                          res.metafile.inputs[rawJsFilePath].imports.filter((
+                            x,
+                          ) => x.kind == "import-statement").map((x) =>
+                            resolveFilePath(x.path)
+                          ),
+                        ),
+                      }}
+                    >
+                    </script>,
+                  );
+
+                  resolve((html) =>
+                    html.replace("</head>", preloads + "</head>")
+                  );
+                });
+              },
+            );
+            
+            const result = await render(
+              args.path,
+              islands,
+              body,
+              htmlFilePath,
+              jsFilePath,
+              replacer
+            );
+
+            cache.set(args.path, {
+              inputs,
+              result,
+            });
+
             return {
               namespace: "PreactPlugin",
               path: args.path,
-              pluginData: await render(
-                islands,
-                body,
-                htmlFilePath,
-                jsFilePath,
-              ),
+              pluginData: result,
             };
           });
         });
 
         build.onLoad(
-          { filter: /.*/, namespace: "PreactPlugin" },
+          { filter: /^/, namespace: "PreactPlugin" },
           (args) => {
             return args.pluginData;
           },
         );
+
+        build.onEnd(async () => {
+          for (const f of queue.splice(0)) {
+            await f();
+          }
+        });
       },
     },
   };

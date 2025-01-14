@@ -1,6 +1,7 @@
 import postcss from "npm:postcss@^8";
 import * as path from "../../deps/path.ts";
-import { DejamuPlugin } from "../../pluginSystem/Plugin.ts";
+import { DejamuPlugin } from "../../core/plugins/Plugin.ts";
+import { DejamuContext } from "../../core/context.ts";
 
 export const PostCssPlugin = (
   extensions: string[],
@@ -13,7 +14,7 @@ export const PostCssPlugin = (
     plugin: {
       name: "PostCssPlugin",
       setup(build) {
-        build.onResolve({ filter: /.*/ }, (args) => {
+        build.onResolve({ filter: /^/ }, (args) => {
           if (extensions.includes(path.extname(args.path))) {
             return {
               namespace: "PostCssPlugin",
@@ -23,9 +24,9 @@ export const PostCssPlugin = (
         });
 
         build.onLoad(
-          { filter: /.*/, namespace: "PostCssPlugin" },
+          { filter: /^/, namespace: "PostCssPlugin" },
           async (args) => {
-            const rawStyle = await Deno.readTextFile(args.path);
+            const rawStyle = await DejamuContext.current.features.fs.readTextFile(args.path);
 
             const res = await processor.process(rawStyle);
 

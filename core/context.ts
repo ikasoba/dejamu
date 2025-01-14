@@ -1,51 +1,73 @@
 import { BuildOptions, Plugin as EsbuildPlugin } from "../deps/esbuild.ts";
 import * as esbuild from "../deps/esbuild.ts";
-import { DejamuPluginBase } from "../pluginSystem/DejamuPluginBase.ts";
+import { DejamuPluginBase } from "../core/plugins/DejamuPluginBase.ts";
 import { Config } from "./Config.ts";
 import { getOption } from "./option.ts";
 import { ArgsType, RemovePrefix } from "../utils/types.ts";
-import { DejamuPlugin } from "../pluginSystem/Plugin.ts";
 import { PreBuildScript } from "./PreBuildScript.ts";
 import { AsyncTaskQueue } from "../utils/AsyncTaskQueue.ts";
+import { FileSystem, NativeFileSystemDriver } from "../utils/FileSystem.ts";
+import { DejamuPlugin } from "./plugins/Plugin.ts";
+
+export interface IContextFeatures {
+  fs: FileSystem;
+}
 
 export class DejamuContext {
   static current: DejamuContext;
 
   static async init(config: Config) {
+    const features = {
+      fs: new FileSystem(new NativeFileSystemDriver())
+    }
+    
     const esbuildPlugins: EsbuildPlugin[] = [];
     const dejamuPlugins: DejamuPluginBase[] = [];
+
+    const ctx = new DejamuContext(
+      config,
+      esbuildPlugins,
+      dejamuPlugins,
+      features
+    );
+
+    DejamuContext.current = ctx;
 
     for (const plugin of config.plugins) {
       if (plugin.type == "esbuild") {
         esbuildPlugins.push(plugin.plugin);
       } else {
-        await plugin.plugin.onReady?.();
         dejamuPlugins.push(plugin.plugin);
+        await plugin.plugin.onReady?.();
       }
     }
 
-    const esbuildOption = await getOption(config, esbuildPlugins);
-
-    return (DejamuContext.current = new DejamuContext(
-      config,
-      esbuildOption,
-      esbuildPlugins,
-      dejamuPlugins
-    ));
+    return ctx;
   }
 
   public tasks = new AsyncTaskQueue();
 
-  private context: Promise<esbuild.BuildContext>;
 
   private constructor(
     private config: Config,
-    private esbuildOption: BuildOptions,
     private esbuildPlugins: EsbuildPlugin[],
-    private dejamuPlugins: DejamuPluginBase[]
-  ) {
-    this.tasks.runTaskRunner();
-    this.context = esbuild.context(this.esbuildOption);
+    private dejamuPlugins: DejamuPluginBase[],
+    public features: IContextFeatures
+  ) {}
+
+  private _esbuildOption?: BuildOptions;
+  async getEsbuildOption() {
+    this._esbuildOption = await getOption(this.config, this.esbuildPlugins);
+    console.log(this._esbuildOption.entryPoints);
+
+    return this._esbuildOption;
+  }
+
+  private _context?: Promise<esbuild.BuildContext>;
+  async getContext() {
+    this._context ??= esbuild.context(await this.getEsbuildOption());
+
+    return this._context;
   }
 
   async addPlugins(...plugins: DejamuPlugin[]) {
@@ -70,10 +92,11 @@ export class DejamuContext {
 
   async dispatchRender(
     pageBody: string,
-    script: PreBuildScript
+    script: PreBuildScript,
+    path: string
   ): Promise<string> {
     for (const plugin of this.dejamuPlugins) {
-      pageBody = (await plugin.onRender?.(pageBody, script)) ?? pageBody;
+      pageBody = (await plugin.onRender?.(pageBody, script, path)) ?? pageBody;
     }
 
     return pageBody;
@@ -87,21 +110,20 @@ export class DejamuContext {
 
     await this.addPlugins(...this.config.plugins);
 
-    this.esbuildOption = await getOption(this.config, this.esbuildPlugins);
-
-    await (await this.context).dispose();
-    this.context = esbuild.context(this.esbuildOption);
+    await (await this.getContext()).dispose();
+    this._esbuildOption = undefined;
+    this._context = undefined;
   }
 
   async build() {
-    return await esbuild.build(this.esbuildOption);
+    return await esbuild.build(await this.getEsbuildOption());
   }
 
   async rebuild() {
-    return (await this.context).rebuild();
+    return (await this.getContext()).rebuild();
   }
 
   async dispose() {
-    await (await this.context).dispose();
+    await (await this.getContext()).dispose();
   }
 }

@@ -60,29 +60,35 @@ export async function registerIsland(islandPath: string) {
   }
 }
 
-export const collectIslands = (islands: Island[]) => {
-  let islandsImportHeader = "";
+export function replaceIsland(islandPath: string, module: object) {
+  const modulePath = path.toFileUrl(islandPath).toString();
+  current.loadedModules.add(modulePath);
+  
+  for (const [k, v] of Object.entries(module)) {
+    if (typeof v != "function") continue;
 
-  let idNum = 0;
-  const newId = () => `$island_${idNum++}`;
+    current.islands.push({
+      id: id(),
+      modulePath: modulePath,
+      exportName: k,
+      component: v as any,
+    });
+  }
+}
 
+export const collectIslands = (islands: Omit<Island, "component">[]) => {
   const reviveArgData: [string, string][] = [];
 
   for (const island of islands) {
-    const id = newId();
-    islandsImportHeader += `import {${
-      island.exportName
-    } as ${id}} from ${JSON.stringify(island.modulePath)};`;
-    reviveArgData.push([island.id, id]);
+    reviveArgData.push([island.id, `import(${JSON.stringify(island.modulePath)}).then(x => x.${island.exportName})`]);
   }
 
   const reviveArg =
     "{" +
-    reviveArgData.map(([k, v]) => `${JSON.stringify(k)}: ${v}`).join(",") +
+    reviveArgData.map(([k, expr]) => `${JSON.stringify(k)}: ${expr}`).join(",") +
     "}";
 
   return {
-    head: islandsImportHeader,
     reviveArg,
   };
 };

@@ -2,15 +2,21 @@ import { FunctionComponent } from "npm:preact/";
 import * as path from "../../deps/path.ts";
 import * as FrontMatter from "../../deps/front_matter.ts";
 import { EmptyLayout } from "./EmptyLayout.tsx";
-import { DejamuPlugin } from "../../pluginSystem/Plugin.ts";
+import { DejamuPlugin } from "../../core/plugins/Plugin.ts";
 import { Marked, MarkedExtension } from "../../deps/marked.ts";
+import { dynamicImport } from "../../utils/dynamicImport.ts";
+import { encodeBase64 } from "https://deno.land/std@0.203.0/encoding/base64.ts";
+import { DejamuContext } from "../../core/context.ts";
 
 export type LayoutComponent = FunctionComponent<
   { data: Record<string, any>; children: string; path: string }
 >;
 
 const loadMarkdown = async (path: string) => {
-  const rawDocument = await Deno.readTextFile(path);
+  const rawDocument = await DejamuContext.current.features.fs.readTextFile(
+    path,
+  );
+  
   let data: Record<string, any>;
   let markdownBody: string;
 
@@ -45,46 +51,75 @@ export const MarkdownPlugin = (
 
   marked.use(...plugins);
 
+  const cache = new Map<string, {
+    hash: string;
+    result: Awaited<ReturnType<typeof loadMarkdown>>
+  }>();
+
   return {
     type: "esbuild",
     plugin: {
       name: "MarkdownPlugin",
       setup(build) {
-        build.onResolve({ filter: /\.md$/ }, async (args) => {
-          if (args.namespace != "file") return;
+        build.onResolve(
+          { filter: /\.md$/, namespace: "file" },
+          async (args) => {
+            const hash = encodeBase64(
+              await DejamuContext.current.features.fs.getHash(args.path),
+            );
 
-          const { data, markdownBody } = await loadMarkdown(args.path);
+            const cached = cache.get(args.path);
 
-          const layoutPath = data?.layout != null
-            ? path.toFileUrl(
-              path.resolve(path.join(layouts, `${data.layout}`)),
-            ).toString()
-            : null;
+            let result;
+            if (cached && cached.hash == hash) {
+              result = cached.result;
+            } else {
+              result = await loadMarkdown(args.path);
+              
+              cache.set(args.path, {
+                hash,
+                result
+              });
+            }
 
-          return build.resolve(args.path, {
-            kind: args.kind,
-            importer: args.importer,
-            resolveDir: args.resolveDir,
-            namespace: "PreactPlugin",
-            pluginData: {
-              PageGetter: async () => {
-                const Layout: LayoutComponent = layoutPath
-                  ? (await import(layoutPath + "?" + Date.now())).default
-                  : EmptyLayout;
+            const { data, markdownBody } = result;
 
-                for (const plugin of plugins) {
-                  plugin.onRender?.();
-                }
+            const layoutPath = data?.layout != null
+              ? path.relative(
+                Deno.cwd(),
+                path.resolve(path.join(layouts, `${data.layout}`)),
+              )
+              : null;
 
-                return () => (
-                  <Layout data={data} path={args.path}>
-                    {markdownBody}
-                  </Layout>
-                );
+            const Layout: LayoutComponent = layoutPath
+              ? (await dynamicImport(layoutPath)).default
+              : EmptyLayout;
+
+            return build.resolve(args.path, {
+              kind: args.kind,
+              importer: args.importer,
+              resolveDir: args.resolveDir,
+              namespace: "PreactPlugin",
+              pluginData: {
+                inputs: [
+                  hash,
+                  Layout,
+                ],
+                Page: () => {
+                  for (const plugin of plugins) {
+                    plugin.onRender?.();
+                  }
+
+                  return (
+                    <Layout data={data} path={args.path}>
+                      {markdownBody}
+                    </Layout>
+                  );
+                },
               },
-            },
-          });
-        });
+            });
+          },
+        );
       },
     },
   };

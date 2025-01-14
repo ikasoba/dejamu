@@ -1,31 +1,32 @@
 import * as path from "../../deps/path.ts";
 import * as http from "../../deps/http.ts";
 import { contentType } from "../../deps/media_types.ts";
-import { genBuildCode } from "../generator/genBuildCode.ts";
-import { genContext } from "../generator/genContext.ts";
-import { Source } from "../generator/Source.ts";
-import { runDeno } from "../util/runDeno.ts";
-
-async function runBuildTask() {
-  const source: Source = { header: "", body: "" };
-
-  source.header +=
-    'import { HotReloadPlugin } from "dejamu/plugins/hotReload/HotReloadPlugin.ts";';
-
-  genContext(source, "ctx");
-  source.body += `ctx.addPlugins(HotReloadPlugin());`;
-
-  genBuildCode(source, "ctx");
-
-  await runDeno(`${source.header}\n${source.body}`);
-}
+import { Config } from "../../core/Config.ts";
+import { DejamuContext } from "../../core/context.ts";
+import { HotReloadPlugin } from "../../plugins/hotReload/HotReloadPlugin.ts";
+import {
+  dynamicReload,
+} from "../../utils/dynamicImport.ts";
 
 export const serve = async (port: number) => {
   try {
     await Deno.remove("./.out", { recursive: true });
-  } catch (e) {
+  } catch (e: any) {
     if (e?.code != "ENOENT") throw e;
   }
+
+  const root = Deno.cwd();
+
+  const getConfig = () =>
+    import(path.join(Deno.cwd(), "dejamu.config.ts") + "#" + Date.now()).then(
+      (x) => x.default as Config,
+    );
+
+  const config = await getConfig();
+
+  const context = await DejamuContext.init(config);
+
+  context.addPlugins(HotReloadPlugin());
 
   const webSocketClients: Set<WebSocket> = new Set();
 
@@ -51,14 +52,14 @@ export const serve = async (port: number) => {
         const stat = await Deno.stat(p);
 
         if (stat.isDirectory) p = path.join(p, "index.html");
-      } catch (e) {
+      } catch (e: any) {
         if (e?.code != "ENOENT") throw e;
       }
 
       const mime = contentType(path.extname(p)) ?? "application/octet-stream";
 
       try {
-        const body = await Deno.readFile(p);
+        const body = await DejamuContext.current.features.fs.readFile(p);
 
         return new Response(body, {
           status: 200,
@@ -79,7 +80,10 @@ export const serve = async (port: number) => {
     }
   });
 
-  await runBuildTask();
+  console.log("building...");
+  console.time("build completed");
+  await context.rebuild();
+  console.timeEnd("build completed");
 
   console.log(`Waiting for connection at http://localhost:${port}/`);
 
@@ -105,11 +109,18 @@ export const serve = async (port: number) => {
           !(
             ignoredItems.some((y) => path.relative(".", x).startsWith(y)) ||
             notifiers.has(x)
-          )
+          ),
       )
     ) {
+      const paths: string[] = [];
+
       for (const p of event.paths) {
         notifiers.add(p);
+        paths.push(path.relative(root, p));
+
+        if (/\.[tj]sx?$/.test(p)) {
+          await dynamicReload(p);
+        }
 
         setTimeout(() => {
           notifiers.delete(p);
@@ -117,10 +128,17 @@ export const serve = async (port: number) => {
       }
 
       queueMicrotask(async () => {
-        await runBuildTask();
+        await context.dispatch("Ready");
+
+        console.log("building...");
+        console.time("build completed");
+        await context.rebuild();
+        console.timeEnd("build completed");
 
         for (const socket of webSocketClients) {
-          if (socket.readyState == WebSocket.OPEN) await socket.send("reload");
+          if (socket.readyState == WebSocket.OPEN) {
+            socket.send(JSON.stringify(paths));
+          }
         }
       });
     }

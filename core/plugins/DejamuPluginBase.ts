@@ -1,5 +1,5 @@
-import { Awaitable } from "../utils/types.ts";
-import { PreBuildScript } from "../core/PreBuildScript.ts";
+import { Awaitable } from "../../utils/types.ts";
+import { PreBuildScript } from "../PreBuildScript.ts";
 
 export interface DejamuPluginBase {
   /**
@@ -17,6 +17,7 @@ export interface DejamuPluginBase {
     /**
      * htmlファイルに書き込まれるJSファイル
      */
-    script: PreBuildScript
+    script: PreBuildScript,
+    path: string
   ): Awaitable<string | null | void>;
 }

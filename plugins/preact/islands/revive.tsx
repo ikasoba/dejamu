@@ -2,15 +2,26 @@ import { ComponentType, hydrate } from "npm:preact";
 import { deserialize } from "./serialize.ts";
 import { unescapeHTML } from "../../../utils/escapeHTML.ts";
 
+interface HydrationInfo {
+  id: string;
+  prop: any;
+  component?: Function;
+  isHydrated: boolean;
+  endpoint: Comment;
+}
+
+const HydrationInfo = new WeakMap<Comment, HydrationInfo>();
+
 export function revive(
-  islands: Record<string, ComponentType<any>>,
+  islands: Record<string, Promise<ComponentType<any>>>,
   node: Node,
+  deferredTasks: Promise<(() => void) | undefined>[] = [],
+  isRoot = true,
 ) {
   type StackContent =
     | {
       type: "start-islands";
-      id: string;
-      prop: any;
+      info: HydrationInfo;
     }
     | {
       type: "node";
@@ -34,13 +45,23 @@ export function revive(
           JSON.parse(unescapeHTML(_prop.replaceAll("&amp;", "&"), [":"])),
         );
 
+        let info = HydrationInfo.get(child);
+        if (!info) {
+          HydrationInfo.set(
+            child,
+            info = {
+              id,
+              prop,
+              isHydrated: false,
+              endpoint: child,
+            },
+          );
+        }
+
         stack.push({
           type: "start-islands",
-          id,
-          prop,
+          info,
         });
-
-        child.remove();
 
         continue;
       } else if (child.textContent?.startsWith("/djm-ph")) {
@@ -49,45 +70,72 @@ export function revive(
           continue;
         }
 
-        const Component = islands[id];
-        let prop: object = {};
+        const componentPromise = islands[id];
+        let info: HydrationInfo;
 
         const parent = child.parentNode;
-        const next = child.nextSibling;
 
-        child.remove();
-
-        const container = document.createDocumentFragment();
+        const children: Node[] = [];
 
         while (1) {
           const v = stack.pop();
+
           if (v == null) {
             throw new Error("invalid partial hydrate comment.");
           }
+
           if (v.type == "start-islands") {
-            prop = v.prop;
+            info = v.info;
 
             break;
           }
 
-          container.append(v.value);
+          children.push(v.value);
         }
 
-        hydrate(<Component {...prop} />, container);
+        deferredTasks.push(componentPromise.then((Component) => {
+          if (info.isHydrated && info.component == Component) return;
 
-        parent?.insertBefore(container, next);
+          info.isHydrated = true;
+          info.component = Component;
+
+          const preactNode = <Component {...info.prop} />;
+
+          return () => {
+            console.time("dejamu hydrate");
+            const container = document.createDocumentFragment();
+
+            container.append(...children);
+
+            hydrate(preactNode, container);
+
+            console.timeEnd("dejamu hydrate");
+
+            parent?.insertBefore(container, child);
+          };
+        }));
 
         continue;
       }
     }
 
     if (child.childNodes.length) {
-      revive(islands, child);
+      revive(islands, child, deferredTasks, false);
     }
 
     stack.push({
       type: "node",
       value: child,
     });
+  }
+
+  if (isRoot) {
+    let current = Promise.resolve();
+
+    for (const promise of deferredTasks) {
+      promise.then((fn) => {
+        if (fn) current = current.then(fn)
+      });
+    }
   }
 }

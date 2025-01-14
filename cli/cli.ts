@@ -1,10 +1,5 @@
 import { Command } from "../deps/command.ts";
 import { main as initProject } from "../scripts/init.ts";
-import { Source } from "./generator/Source.ts";
-import { genBuildCode } from "./generator/genBuildCode.ts";
-import { genServeCode } from "./generator/genServeCode.ts";
-import { genContext } from "./generator/genContext.ts";
-import { runDeno } from "./util/runDeno.ts";
 import { runBuildTask, runServeTask } from "./util/task.ts";
 
 const app = new Command()

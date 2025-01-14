@@ -1,5 +1,5 @@
+import { DejamuContext } from "../core/context.ts";
 import * as path from "../deps/path.ts";
-import { createDirectoryIfNotExists } from "../utils/createDirectoryIfNotExists.ts";
 import { createIdGenerator } from "../utils/id.ts";
 import { Awaitable } from "../utils/types.ts";
 import { cache } from "https://deno.land/x/cache/mod.ts";
@@ -14,8 +14,6 @@ export const initAssets = async (_outdir: string) => {
   genId = createIdGenerator();
   outdir = _outdir;
   queuedBatches = [];
-
-  await createDirectoryIfNotExists(path.join(_outdir, "./__assets__/"));
 };
 
 export const copyAssets = async () => {
@@ -36,11 +34,8 @@ export const asset = (source: string) => {
     assetPair.set(source, assetPath);
 
     queuedBatches.push(async () => {
-      await Deno.mkdir(path.dirname(path.join(outdir, assetDest)), {
-        recursive: true,
-      });
-
-      await Deno.copyFile(`.${source}`, path.join(outdir, assetDest));
+      const { fs } = DejamuContext.current.features;
+      await fs.writeFile(path.join(outdir, assetDest), await fs.readFile(`.${source}`));
     });
 
     return assetPath;
@@ -54,7 +49,7 @@ export const asset = (source: string) => {
 
     queuedBatches.push(async () => {
       let url = new URL(
-        /^npm:/.test(source) ? source : await import.meta.resolve(source)
+        /^npm:/.test(source) ? source : import.meta.resolve(source)
       );
 
       if (url.protocol == "npm:") {
@@ -63,7 +58,9 @@ export const asset = (source: string) => {
 
       const file = await cache(url);
 
-      await Deno.copyFile(file.path, path.join(outdir, assetDest));
+      const { fs } = DejamuContext.current.features;
+
+      await fs.writeFile(path.join(outdir, assetDest), await fs.readFile(file.path));
     });
 
     return assetPath;
