@@ -93,10 +93,20 @@ export const getOption = async (config: Config, plugins: EsbuildPlugin[]) => {
       {
         name: "specifier-resolver",
         setup(build) {
+          build.onLoad({ filter: /^/ }, async (args) => {
+            if (args.pluginData?.loader) {
+              return {
+                loader: args.pluginData.loader,
+                contents: await Deno.readTextFile(args.path)
+              }
+            }
+          })
+          
           build.onResolve({ filter: /^/ }, async (args) => {
             if (args.namespace == "file") {
               return {
                 path: args.path,
+                pluginData: args.pluginData
               };
             } else {
               const specifier = esbuildResolutionToURL(args);
@@ -131,6 +141,8 @@ export const getOption = async (config: Config, plugins: EsbuildPlugin[]) => {
 
                 return {
                   path: (entry.emit ?? entry.local)!,
+                  namespace: "file",
+                  pluginData: { loader: entry.mediaType == "TypeScript" ? "ts" : entry.mediaType == "TSX" ? "tsx" : entry.mediaType == "JavaScript" ? "js" : entry.mediaType == "JSX" ? "jsx" : undefined }
                 };
               }
             }

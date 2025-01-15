@@ -18,7 +18,7 @@ export const serve = async (port: number) => {
   const root = Deno.cwd();
 
   const getConfig = () =>
-    import(path.join(Deno.cwd(), "dejamu.config.ts") + "#" + Date.now()).then(
+    import(path.toFileUrl(path.join(Deno.cwd(), "dejamu.config.ts")).toString() + "#" + Date.now()).then(
       (x) => x.default as Config,
     );
 
