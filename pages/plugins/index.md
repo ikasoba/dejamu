@@ -8,7 +8,7 @@ layout: DejamuPage.tsx
   </p>
 </h1>
 
-<section class="center-box card-list" style="flex-direction: row; justify-content: center;">
+<section class="center-box card-list">
   <article class="card">
     <h2><a href="https://github.com/ikasoba/dejamu/tree/main/plugins/preact">
     Preact Plugin
@@ -50,8 +50,16 @@ layout: DejamuPage.tsx
     Twind Plugin
     </a></h2>
     <p>
-
-This plugin can be used to use [Twind](https://twind.style) in Dejamu.
+    This plugin can be used to use <a href="https://twind.style">Twind</a> in Dejamu.
+    </p>
+  </article>
+ 
+  <article class="card">
+    <h2><a href="https://github.com/ikasoba/dejamu/tree/main/plugins/virtual">
+    Virtual Plugin
+    </a></h2>
+    <p>
+    This plugin can be used to create a virtual input to Dejamu.
     </p>
   </article>
 </section>

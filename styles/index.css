@@ -1,20 +1,28 @@
 .center-box {
-  @apply flex flex-col items-center gap-2;
+  @apply flex items-center justify-center gap-2;
 }
 
 .btn {
-  @apply  bg-[dodgerblue] text-white p-1 rounded transition
+  @apply  bg-primary text-white px-2 py-1 rounded transition
           hover:filter[brightness(0.95)] active:filter[brightness(0.9)];
 }
 
+.btn-xl {
+  @apply px-4 py-2 rounded-xl font-bold text-lg;
+}
+
+.btn-gray {
+  @apply bg-gray-300 text-[#333];
+}
+
 .card-list {
-  @apply gap-2 flex-wrap;
+  @apply gap-4 flex-wrap flex-row max-sm:flex-col justify-center;
 }
 
 .card {
   @apply  flex flex-col
           bg-white border border-[lightgray] rounded
-          p-2 width[15rem] aspect-ratio[4_/_3];
+          p-2 w-[15rem] max-sm:(w-[100%] min-height[10rem]) aspect-ratio[4_/_3] max-sm:aspect-ratio[unset] shadow-md hover:shadow-primary transition;
 }
 
 .card > h2 {
@@ -29,18 +37,29 @@
   @apply flex gap-2 p-2 items-center;
 }
 
+.horizontal {
+  @apply flex gap-2 overflow-auto;
+}
+
+.horizontal > * {
+  @apply flex-1;
+}
+
 body {
   font-family: sans-serif;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
 
+  color: #333;
+
   margin: 0;
 }
 
 body > div {
   flex: 1;
-  padding: 0.5rem;
+
+  @apply px-[10vw] max-md:px-[0.5rem];
 }
 
 h1, h2, h3 {
@@ -65,20 +84,24 @@ h2 {
   margin: 0.5em 0;
 }
 
-a {
+a:not(.no-decoration) {
   color: dodgerblue;
   text-decoration: underline;
 }
 
-a:visited {
+a:not(.no-decoration):visited {
   color: slateblue;
 }
 
-a:active {
+a:not(.no-decoration):active {
   color: hotpink;
 }
 
 ul {
   list-style: disc;
   padding-left: 1.5rem;
+}
+
+p {
+  padding: 0.25rem 0;
 }

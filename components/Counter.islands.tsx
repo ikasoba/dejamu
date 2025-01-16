@@ -1,4 +1,3 @@
-import { tw } from "@twind/core";
 import { useState } from "npm:preact/hooks";
 
 export default function Counter() {
@@ -10,7 +9,7 @@ export default function Counter() {
         className="btn"
         onClick={() => setCount((count) => count + 1)}
       >
-        {count == 0 ? "click me!" : `count: ${count}`}
+        {count ? `count: ${count}` : "click me!"}
       </button>
     </div>
   );

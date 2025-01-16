@@ -4,12 +4,12 @@ import { LayoutComponent } from "dejamu/plugins/md/MarkdownPlugin.tsx";
 import Counter from "../components/Counter.islands.tsx";
 import { SiteHeader } from "../components/SiteHeader.tsx";
 
-export default (function DejamuPage({ children }) {
+export default (function Documentation({ children }) {
   return (
     <>
       <Head>
         <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <title>Dejamu🛌</title>
+        <title>Dejamu🛌 Documention</title>
       </Head>
       <SiteHeader />
       <Markdown>
