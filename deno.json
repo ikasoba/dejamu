@@ -6,7 +6,7 @@
     "serve": "deno task dejamu serve"
   },
   "imports": {
-    "dejamu/": "https://raw.githubusercontent.com/ikasoba/dejamu/0.0.22/",
+    "dejamu/": "https://raw.githubusercontent.com/ikasoba/dejamu/0.0.25/",
     "path/": "https://deno.land/std@0.203.0/path/",
     "@twind/": "npm:/@twind/"
   },
