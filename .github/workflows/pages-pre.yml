@@ -1,10 +1,10 @@
 # Simple workflow for deploying static content to GitHub Pages
-name: Deploy dejamu to Pages
+name: (Pre) Deploy dejamu to Pages
 
 on:
   # Runs on pushes targeting the default branch
   push:
-    branches: ["pages"]
+    branches: [pages-pre"]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -34,9 +34,16 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: "setup deno"
-        uses: denoland/setup-deno@v1
+        uses: denoland/setup-deno@v2
         with:
-          deno-version: v1.x
+          deno-version: v2.0.x
+      - name: "cache deno"
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.deno
+            ~/.cache/deno
+          key: ${{ runner.os }}-deno-${{ hashFiles('**/deps.ts') }}          
       - name: "cache dependency"
         run: deno cache ./dejamu.config.ts
       - name: "build page"
@@ -49,3 +56,5 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v2
+        with:
+          preview: true
