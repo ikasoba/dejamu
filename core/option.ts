@@ -97,7 +97,7 @@ export const getOption = async (config: Config, plugins: EsbuildPlugin[]) => {
             if (args.pluginData?.loader) {
               return {
                 loader: args.pluginData.loader,
-                contents: await Deno.readTextFile(args.path)
+                contents: await Deno.readFile(args.path)
               }
             }
           })
