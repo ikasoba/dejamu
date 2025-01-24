@@ -1,6 +1,7 @@
 import { concat } from "../deps/bytes.ts";
 import { dirname, join, resolve } from "../deps/path.ts";
 import { create } from "../deps/xxhash64.ts";
+import { toArrayBuffer } from "../deps/streams.ts";
 
 const xxh = await create();
 
@@ -60,7 +61,7 @@ export class FileSystem {
   }
 
   async getHash(path: string): Promise<Uint8Array> {
-    return new Uint8Array(xxh.hash(await this.readFile(path)) as ArrayBuffer);
+    return new Uint8Array(xxh.hash(new Uint8Array(await toArrayBuffer(await this._driver.getHashable(path)))) as ArrayBuffer);
   }
 
   async readFile(path: string): Promise<Uint8Array> {

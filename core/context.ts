@@ -8,9 +8,11 @@ import { PreBuildScript } from "./PreBuildScript.ts";
 import { AsyncTaskQueue } from "../utils/AsyncTaskQueue.ts";
 import { FileSystem, NativeFileSystemDriver } from "../utils/FileSystem.ts";
 import { DejamuPlugin } from "./plugins/Plugin.ts";
+import { CacheSystem, InMemoryCacheSystem } from "../utils/CacheSystem.ts";
 
 export interface IContextFeatures {
   fs: FileSystem;
+  cache: CacheSystem;
 }
 
 export class DejamuContext {
@@ -18,7 +20,8 @@ export class DejamuContext {
 
   static async init(config: Config) {
     const features = {
-      fs: new FileSystem(new NativeFileSystemDriver())
+      fs: new FileSystem(new NativeFileSystemDriver()),
+      cache: new InMemoryCacheSystem()
     }
     
     const esbuildPlugins: EsbuildPlugin[] = [];

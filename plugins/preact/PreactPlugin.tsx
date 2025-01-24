@@ -169,7 +169,7 @@ export const PreactPlugin = (): DejamuPlugin => {
 
             const inputs = Array.isArray(args.pluginData?.inputs)
               ? args.pluginData.inputs
-              : [encodeBase64(await DejamuContext.current.features.fs.readFile(args.path))];
+              : [encodeBase64(await DejamuContext.current.features.fs.getHash(args.path))];
 
             if (
               cached && cached.inputs.length == inputs.length && cached.inputs.every((x, i) => x == inputs[i])
