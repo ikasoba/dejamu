@@ -1,6 +1,7 @@
-import pkg from "../depm.json" assert { type: "json" };
-
 export async function main() {
+  const pkgResponse = await fetch(new URL("../depm.json", import.meta.url));
+  const pkg = await pkgResponse.json();
+
   const denoFile = {
     lock: false,
     tasks: {
