@@ -1,7 +1,6 @@
-export async function main() {
-  const pkgResponse = await fetch(new URL("../depm.json", import.meta.url));
-  const pkg = await pkgResponse.json();
+import pkg from "../depm.json" with { type: "json" };
 
+export async function main() {
   const denoFile = {
     lock: false,
     tasks: {
