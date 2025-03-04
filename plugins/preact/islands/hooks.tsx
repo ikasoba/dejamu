@@ -52,8 +52,8 @@ options.__b = (vnode) => {
     patched.add(vnode);
     islands.add(island);
 
-    const Component = vnode.type as ComponentType<any>;
-    vnode.type = ((props: any) => {
+    const Component = vnode.type as ComponentType<object>;
+    vnode.type = ((props: object) => {
       const res = <Component {...props} />;
       patched.add(res);
 
@@ -73,7 +73,7 @@ options.__b = (vnode) => {
           />
         </Fragment>
       );
-    }) satisfies ComponentType<any>;
+    }) satisfies ComponentType<object>;
   }
 
   oldDiff?.(vnode);

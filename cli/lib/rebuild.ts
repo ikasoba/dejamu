@@ -1,12 +1,6 @@
 import { DejamuContext } from "../../core/context.ts";
 
-export const build = async (ctx: DejamuContext, paths?: string[]) => {
-  try {
-    await Deno.remove("./.out", { recursive: true });
-  } catch (e: any) {
-    if (e?.code != "ENOENT") throw e;
-  }
-
+export const rebuild = async (ctx: DejamuContext) => {
   console.log("building...");
 
   const res = await ctx.build();

@@ -1,8 +1,10 @@
 import { css, extract, setup, tw, TwindConfig } from "@twind/core";
 import * as path from "../../deps/path.ts";
-import { DejamuPlugin } from "../../pluginSystem/Plugin.ts";
+import { DejamuPlugin } from "../../core/plugins/Plugin.ts";
 import { appendHead } from "../Head.tsx";
 import { glob } from "../../utils/glob.ts";
+import { DejamuContext } from "../../core/context.ts";
+import { dynamicImport } from "../../utils/dynamicImport.ts";
 
 export interface TwindPluginConfig {
   /** glob patterns for css files. */
@@ -18,29 +20,33 @@ export interface TwindPluginConfig {
 export function TwindPlugin(
   {
     styles = [],
-    config: configPath = "./twind.config.{ts,js,tsx,jsx}",
+    config: configPathPattern = "./twind.config.{ts,js,tsx,jsx}",
   }: TwindPluginConfig,
 ): DejamuPlugin {
+  let configPath: string;
   let config: TwindConfig;
+  let hrKey = -1;
 
   return {
     type: "dejamu",
     plugin: {
       async onReady() {
-        configPath = await glob(configPath).then(
-          (x) => path.toFileUrl(x[0].path).toString(),
+        hrKey += 1;
+
+        configPath = await glob(configPathPattern).then(
+          (x) => path.toFileUrl(x[0]).toString(),
         );
 
-        config = (await import(
-          configPath
+        config = (await dynamicImport(
+          configPath,
         )).default;
 
         setup(config);
 
         const cssFiles = (await Promise.all(styles.map((x) => glob(x)))).flat();
-        for (const file of cssFiles) {
+        for (const filePath of cssFiles) {
           tw(
-            css(await Deno.readTextFile(file.path)),
+            css(await DejamuContext.current.features.fs.readTextFile(filePath)),
           );
         }
       },
@@ -48,18 +54,31 @@ export function TwindPlugin(
         const { html, css } = extract(body);
 
         appendHead(
-          <style id="__DJM_TWIND__" dangerouslySetInnerHTML={{ __html: css }}>
+          <style
+            x-key={"" + hrKey}
+            id="__DJM_TWIND__"
+            dangerouslySetInnerHTML={{ __html: css }}
+          >
           </style>,
         );
 
-        script.head.unshift(
-          'import { hydrate as twind_hydrate } from "dejamu/plugins/twind/hydrate.ts"',
-          `import twindPlugin_twindConfig from ${JSON.stringify(configPath)}`,
-        );
+        if (script.hasIslands) {
+          script.head.push(
+            'import { hydrate as twind_hydrate } from "dejamu/plugins/twind/hydrate.ts";',
+          );
 
-        script.body.unshift(
-          "twind_hydrate(twindPlugin_twindConfig);",
-        );
+          script.footer.push(
+            `window.addEventListener("load", async function handler() {` +
+              `  const { default: twind_config } = await import(${
+                JSON.stringify(configPath)
+              });` +
+              '  console.time("twind hydrate");' +
+              `  twind_hydrate(twind_config);` +
+              '  console.timeEnd("twind hydrate");' +
+              '  window.removeEventListener("load", handler)' +
+              `});`,
+          );
+        }
 
         return html;
       },

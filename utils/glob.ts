@@ -1,4 +1,5 @@
-import * as fs from "../deps/fs.ts";
+import { DejamuContext } from "../core/context.ts";
+import { globToRegExp, normalizeGlob, relative } from "../deps/path.ts";
 
 export const asyncIterableIteratorToArray = async <T>(
   iter: AsyncIterableIterator<T>,
@@ -19,4 +20,14 @@ export const asyncIterableToArray = async <T>(
 };
 
 export const glob = (pattern: string) =>
-  asyncIterableIteratorToArray(fs.expandGlob(pattern));
+  asyncIterableIteratorToArray(globFrom(pattern, DejamuContext.current.features.fs.getEntries(Deno.cwd())));
+
+export async function* globFrom(pattern: string, iter: AsyncIterableIterator<string>) {
+  const regexp = globToRegExp(normalizeGlob(pattern));
+
+  for await (const path of iter) {
+    if (new RegExp(regexp).test(relative(Deno.cwd(), path))) {
+      yield path;
+    }
+  }
+}
