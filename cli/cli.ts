@@ -1,6 +1,6 @@
 import { Command } from "../deps/command.ts";
 import { main as initProject } from "../scripts/init.ts";
-import { runBuildTask, runServeTask } from "./util/task.ts";
+import { runBuildTask, runRebuildTask, runServeTask } from "./util/task.ts";
 
 const app = new Command()
   .name("dejamu")
@@ -12,6 +12,11 @@ app.command("help", "show help message.")
 app.command("build", "build site.")
   .action(async () => {
     await runBuildTask();
+  });
+
+app.command("rebuild", "rebuild site.")
+  .action(async () => {
+    await runRebuildTask();
   });
 
 app.command("serve [port]", "Start development server.")
