@@ -61,7 +61,7 @@ export class FileSystem {
   }
 
   async getHash(path: string): Promise<Uint8Array> {
-    return new Uint8Array(xxh.hash(new Uint8Array(await toArrayBuffer(await this._driver.getHashable(path)))) as ArrayBuffer);
+    return new Uint8Array(xxh.hash(new Uint8Array(await toArrayBuffer(await this._driver.getHashable(path)))) as unknown as ArrayBuffer);
   }
 
   async readFile(path: string): Promise<Uint8Array> {

@@ -1,7 +1,7 @@
 let __atomicGuard: Promise<void> | null = null;
 
 function atomic(fn: () => Promise<void>) {
-  __atomicGuard = __atomicGuard?.then(fn) ?? fn();
+  __atomicGuard = __atomicGuard?.then(fn, fn) ?? fn();
 }
 
 export interface PreparedPage {

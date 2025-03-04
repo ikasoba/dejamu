@@ -15,6 +15,7 @@ import { OnLoadResult } from "../../deps/esbuild.ts";
 import { PreBuildScript } from "../../core/PreBuildScript.ts";
 import { defaultHooks, dynamicImport } from "../../utils/dynamicImport.ts";
 import { encodeBase64 } from "https://deno.land/std@0.203.0/encoding/base64.ts";
+import { CacheStorageDriver } from "../../utils/CacheSystem.ts";
 
 async function render(
   modulePath: string,
@@ -108,6 +109,11 @@ async function render(
   }
 }
 
+interface CachedResult {
+  inputs: unknown[];
+  result: OnLoadResult;
+}
+
 export const PreactPlugin = (): DejamuPlugin => {
   defaultHooks.onResolved = (path, mod) => {
     if (/\.islands\.[tj]sx?$/.test(path)) {
@@ -115,21 +121,19 @@ export const PreactPlugin = (): DejamuPlugin => {
     }
   };
 
-  defaultHooks.onReloaded = () => {
-    cache.clear();
-  }
+  let cache: CacheStorageDriver;
 
-  const cache = new Map<string, {
-    inputs: unknown[];
-    result: OnLoadResult;
-  }>();
+  defaultHooks.onReloaded = () => {
+    cache?.clear();
+  }
 
   return {
     type: "esbuild",
     plugin: {
       name: "PreactPlugin",
-      setup(build) {
+      async setup(build) {
         const queue: (() => Promise<void> | void)[] = [];
+        cache = await DejamuContext.current.features.cache.open("plugins/preact")
 
         build.onResolve({ filter: /^/ }, async (args) => {
           if (
@@ -165,7 +169,8 @@ export const PreactPlugin = (): DejamuPlugin => {
           jsFilePath = path.relative(path.dirname(htmlFilePath), jsFilePath);
 
           return await DejamuContext.current.tasks.run(async () => {
-            const cached = cache.get(args.path);
+            const cachedRaw = await cache.get(args.path);
+            const cached = cachedRaw && JSON.parse(cachedRaw) as CachedResult;
 
             const inputs = Array.isArray(args.pluginData?.inputs)
               ? args.pluginData.inputs
@@ -246,10 +251,10 @@ export const PreactPlugin = (): DejamuPlugin => {
               replacer
             );
 
-            cache.set(args.path, {
+            cache.set(args.path, JSON.stringify({
               inputs,
               result,
-            });
+            }));
 
             return {
               namespace: "PreactPlugin",

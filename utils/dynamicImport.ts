@@ -39,7 +39,8 @@ export const defaultHooks: DynamicImportHooks = {};
 
 export async function dynamicImport(
   path: string,
-  hash?: string
+  hash?: string,
+  onHashUpdated?: (newHash: string) => void
 ) {
   path = path.startsWith("file:")
     ? fromFileUrl(path)
@@ -56,6 +57,8 @@ export async function dynamicImport(
     
     return cached.promise;
   }
+  
+  await onHashUpdated?.(hash);
 
   const { promise, resolve: done } = Promise.withResolvers<any>();
 

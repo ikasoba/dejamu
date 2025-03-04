@@ -12,7 +12,12 @@ export type LayoutComponent = FunctionComponent<
   { data: Record<string, any>; children: string; path: string }
 >;
 
-const loadMarkdown = async (path: string) => {
+interface MarkdownDocument {
+  data: Record<string, any>;
+  markdownBody: string;
+}
+
+const loadMarkdown = async (path: string): Promise<MarkdownDocument> => {
   const rawDocument = await DejamuContext.current.features.fs.readTextFile(
     path,
   );
@@ -44,6 +49,11 @@ export interface MarkdownPluginConfig {
 
 export let marked: Marked;
 
+interface CachedDocument {
+  hash: string;
+  result: MarkdownDocument;
+}
+
 export const MarkdownPlugin = (
   { layouts = "layouts/", plugins = [] }: MarkdownPluginConfig,
 ): DejamuPlugin => {
@@ -51,24 +61,24 @@ export const MarkdownPlugin = (
 
   marked.use(...plugins);
 
-  const cache = new Map<string, {
-    hash: string;
-    result: Awaited<ReturnType<typeof loadMarkdown>>
-  }>();
-
   return {
     type: "esbuild",
     plugin: {
       name: "MarkdownPlugin",
-      setup(build) {
+      async setup(build) {
+        const cache = await DejamuContext.current.features.cache.open("dejamu/plugins/md");
+        
         build.onResolve(
           { filter: /\.md$/, namespace: "file" },
           async (args) => {
+            const sourcePath = path.resolve(args.resolveDir, args.path);
+            
             const hash = encodeBase64(
-              await DejamuContext.current.features.fs.getHash(args.path),
+              await DejamuContext.current.features.fs.getHash(sourcePath),
             );
 
-            const cached = cache.get(args.path);
+            const rawCached = await cache.get("body:" + args.path);
+            const cached = rawCached && JSON.parse(rawCached) as CachedDocument;
 
             let result;
             if (cached && cached.hash == hash) {
@@ -76,10 +86,10 @@ export const MarkdownPlugin = (
             } else {
               result = await loadMarkdown(args.path);
               
-              cache.set(args.path, {
+              await cache.set(args.path, JSON.stringify({
                 hash,
                 result
-              });
+              }));
             }
 
             const { data, markdownBody } = result;
@@ -91,8 +101,14 @@ export const MarkdownPlugin = (
               )
               : null;
 
+            const layoutHash = await cache.get("layout_hash:" + layoutPath);
+
+            const onLayoutHashUpdated = async (hash: string) => {
+              await cache.set("layout_hash:" + layoutPath, hash);
+            }
+
             const Layout: LayoutComponent = layoutPath
-              ? (await dynamicImport(layoutPath)).default
+              ? (await dynamicImport(layoutPath, undefined, onLayoutHashUpdated)).default
               : EmptyLayout;
 
             return build.resolve(args.path, {
@@ -103,7 +119,7 @@ export const MarkdownPlugin = (
               pluginData: {
                 inputs: [
                   hash,
-                  Layout,
+                  layoutHash,
                 ],
                 Page: () => {
                   for (const plugin of plugins) {
