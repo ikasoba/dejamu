@@ -1,5 +1,5 @@
 import { build } from "../deps/esbuild.ts";
-import { fromFileUrl, relative, resolve } from "../deps/path.ts";
+import { fromFileUrl, toFileUrl, relative, resolve } from "../deps/path.ts";
 import {
   denoResolverPlugin,
 } from "../deps/esbuild_deno_loader.ts";
@@ -90,8 +90,8 @@ export async function transform(
   hash?: string,
 ) {
   path = path.startsWith("file:")
-    ? fromFileUrl(path)
-    : resolve(path);
+    ? path
+    : toFileUrl(path).toString();
 
   hash ??= encodeBase64(
     await DejamuContext.current.features.fs.getHash(path),

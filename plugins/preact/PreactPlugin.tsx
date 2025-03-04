@@ -215,7 +215,7 @@ export const PreactPlugin = (): DejamuPlugin => {
                   });
 
                   const resolveFilePath = (filePath: string) => {
-                    return path.relative(path.dirname(htmlFilePath), filePath);
+                    return path.relative(path.dirname(htmlFilePath), filePath).replaceAll("\\", "/");
                   };
 
                   const preloads = await renderToStringAsync(
