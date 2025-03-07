@@ -119,11 +119,17 @@ export class DejamuContext {
   }
 
   async build() {
-    return await esbuild.build(await this.getEsbuildOption());
+    const res = await esbuild.build(await this.getEsbuildOption());
+    await this.dispatch("Generated");
+
+    return res;
   }
 
   async rebuild() {
-    return (await this.getContext()).rebuild();
+    const res = await (await this.getContext()).rebuild();
+    await this.dispatch("Generated");
+
+    return res;
   }
 
   async dispose() {
