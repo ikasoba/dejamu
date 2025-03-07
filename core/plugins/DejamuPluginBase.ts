@@ -20,4 +20,9 @@ export interface DejamuPluginBase {
     script: PreBuildScript,
     path: string
   ): Awaitable<string | null | void>;
+
+  /**
+   * ページが生成された後
+   */
+  onGenerated?(): Awaitable<void>;
 }
