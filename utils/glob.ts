@@ -19,11 +19,11 @@ export const asyncIterableToArray = async <T>(
   return res;
 };
 
-export const glob = (pattern: string) =>
+export const glob = (pattern: string | RegExp) =>
   asyncIterableIteratorToArray(globFrom(pattern, DejamuContext.current.features.fs.getEntries(Deno.cwd())));
 
-export async function* globFrom(pattern: string, iter: AsyncIterableIterator<string>) {
-  const regexp = globToRegExp(normalizeGlob(pattern));
+export async function* globFrom(pattern: string | RegExp, iter: AsyncIterableIterator<string>) {
+  const regexp = typeof pattern == "string" ? globToRegExp(normalizeGlob(pattern)) : pattern;
 
   for await (const path of iter) {
     if (new RegExp(regexp).test(relative(Deno.cwd(), path))) {
