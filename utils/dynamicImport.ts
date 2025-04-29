@@ -97,14 +97,9 @@ export async function transform(
     await DejamuContext.current.features.fs.getHash(path),
   );
 
-  const cached = 
-  transformCache.get(path);
+  const cached = transformCache.get(path);
 
-  if (cached && cached.hash == hash) {
-    for (const dep of await cached.deps) {
-      await dynamicImport(dep);
-    }
-    
+  if (cached && cached.hash == hash) {    
     return cached.promise;
   }
 

@@ -13,7 +13,7 @@ export function HljsPlugin(
           rel="stylesheet"
           href={asset(`npm:highlight.js/styles/${theme}.css`)}
           media="print"
-          {...{onload: "this.media='all'"}}
+          {...{ onload: "this.media='all'" }}
         />,
       );
     },

@@ -21,7 +21,7 @@ const loadMarkdown = async (path: string): Promise<MarkdownDocument> => {
   const rawDocument = await DejamuContext.current.features.fs.readTextFile(
     path,
   );
-  
+
   let data: Record<string, any>;
   let markdownBody: string;
 
@@ -66,13 +66,15 @@ export const MarkdownPlugin = (
     plugin: {
       name: "MarkdownPlugin",
       async setup(build) {
-        const cache = await DejamuContext.current.features.cache.open("dejamu/plugins/md");
-        
+        const cache = await DejamuContext.current.features.cache.open(
+          "dejamu/plugins/md",
+        );
+
         build.onResolve(
           { filter: /\.md$/, namespace: "file" },
           async (args) => {
             const sourcePath = path.resolve(args.resolveDir, args.path);
-            
+
             const hash = encodeBase64(
               await DejamuContext.current.features.fs.getHash(sourcePath),
             );
@@ -85,14 +87,32 @@ export const MarkdownPlugin = (
               result = cached.result;
             } else {
               result = await loadMarkdown(args.path);
-              
-              await cache.set(args.path, JSON.stringify({
-                hash,
-                result
-              }));
+
+              await cache.set(
+                args.path,
+                JSON.stringify({
+                  hash,
+                  result,
+                }),
+              );
             }
 
             const { data, markdownBody } = result;
+
+            const htmlFilePath = path.join(
+              "./",
+              path.relative(Deno.cwd(), path.dirname(args.path)).split(path.SEP)
+                .slice(1).join(path.SEP),
+              path.basename(args.path, path.extname(args.path)) + ".html",
+            ).replaceAll("\\", "/");
+
+            DejamuContext.current.features.pages.set(args.path, {
+              title: data.title,
+              description: data.description,
+              timestamp: data.timestamp ? new Date(data.timestamp) : undefined,
+              outputPath: htmlFilePath,
+              sourcePath: args.path,
+            });
 
             const layoutPath = data?.layout != null
               ? path.relative(
@@ -105,10 +125,14 @@ export const MarkdownPlugin = (
 
             const onLayoutHashUpdated = async (hash: string) => {
               await cache.set("layout_hash:" + layoutPath, hash);
-            }
+            };
 
             const Layout: LayoutComponent = layoutPath
-              ? (await dynamicImport(layoutPath, undefined, onLayoutHashUpdated)).default
+              ? (await dynamicImport(
+                layoutPath,
+                undefined,
+                onLayoutHashUpdated,
+              )).default
               : EmptyLayout;
 
             return build.resolve(args.path, {
