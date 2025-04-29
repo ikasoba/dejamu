@@ -149,8 +149,8 @@ export const PreactPlugin = (): DejamuPlugin => {
           ) return;
 
           if (
-            !(args.path.match(/\.[jt]sx$/) ||
-              typeof args.pluginData?.Page == "function")
+            !(args.path.match(/\.[jt]sx$/) || (args.namespace == "PreactPlugin" &&
+              typeof args.pluginData?.Page == "function"))
           ) return;
 
           let jsFilePath = (path.join(
