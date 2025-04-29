@@ -1,7 +1,7 @@
 import { DejamuContext } from "../../core/context.ts";
 import { dirname, resolve, toFileUrl } from "../../deps/path.ts";
 import { DejamuPlugin } from "../../core/plugins/Plugin.ts";
-import { FileSystemDriver } from "../../utils/FileSystem.ts";
+import { FileSystemDriver } from "../../core/features/FileSystem.ts";
 import { Awaitable } from "../../utils/types.ts";
 
 export interface VirtualFile {
