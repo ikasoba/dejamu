@@ -15,7 +15,7 @@ import { OnLoadResult } from "../../deps/esbuild.ts";
 import { PreBuildScript } from "../../core/PreBuildScript.ts";
 import { defaultHooks, dynamicImport } from "../../utils/dynamicImport.ts";
 import { encodeBase64 } from "https://deno.land/std@0.203.0/encoding/base64.ts";
-import { CacheStorageDriver } from "../../utils/CacheSystem.ts";
+import { CacheStorageDriver } from "../../core/features/CacheSystem.ts";
 
 async function render(
   modulePath: string,

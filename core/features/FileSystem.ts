@@ -1,7 +1,7 @@
-import { concat } from "../deps/bytes.ts";
-import { dirname, join, resolve } from "../deps/path.ts";
-import { create } from "../deps/xxhash64.ts";
-import { toArrayBuffer } from "../deps/streams.ts";
+import { concat } from "../../deps/bytes.ts";
+import { dirname, join, resolve } from "../../deps/path.ts";
+import { create } from "../../deps/xxhash64.ts";
+import { toArrayBuffer } from "../../deps/streams.ts";
 
 const xxh = await create();
 
