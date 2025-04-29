@@ -9,6 +9,11 @@ import { initializeConstantsForBuildTime } from "../constants.ts";
 import { FunctionComponent } from "npm:preact";
 import { dynamicImport } from "../../utils/dynamicImport.ts";
 import { renderToStringAsync } from "../../deps/preact-render-to-string.ts";
+import { JSX } from "npm:preact/jsx-runtime";
+
+export function xml(name: string) {
+  return name as keyof JSX.IntrinsicElements;
+}
 
 async function render(
   _modulePath: string,
