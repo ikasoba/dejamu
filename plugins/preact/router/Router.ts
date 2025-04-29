@@ -21,7 +21,7 @@ export function clearCache() {
 
 export function fetchDocument(url: string) {
   url = url.replace(/\/+(#|$)/, "$1");
-  
+
   if (url in pageCache) return pageCache[url]!;
 
   const promise = new Promise<PreparedPage>((resolve, reject) => {
@@ -58,14 +58,14 @@ export function prepareDocument(
   const modules: string[] = [];
   const preloads = document.createDocumentFragment();
 
-  const addModule = (src: string) => {    
+  const addModule = (src: string) => {
     const modulePath = new URL(src, href).href + "#";
 
     modules.push(modulePath);
 
     addPreload(modulePath);
-  }
-  
+  };
+
   const addPreload = (src: string) => {
     const path = new URL(src, href).href;
     const link = document.createElement("link");
@@ -111,7 +111,11 @@ export function prepareDocument(
 
   globalThis.document.head.append(preloads);
 
-  return { document, modules, isReloadRequired: document.body.querySelector("script") != null };
+  return {
+    document,
+    modules,
+    isReloadRequired: document.body.querySelector("script") != null,
+  };
 }
 
 function replaceNode(a: Node, b: Node) {
@@ -133,7 +137,7 @@ function diffUpdate(a: Node, b: Node) {
 
     const aKey = a.getAttribute("x-key");
     const bKey = b.getAttribute("x-key");
-    
+
     if (aKey && bKey) {
       if (aKey != bKey) {
         return replaceNode(a, b);
@@ -153,7 +157,7 @@ function diffUpdate(a: Node, b: Node) {
         const href = new URL(a.getAttribute(name)!, baseLocation).href;
 
         if (href != b.href) {
-          a.setAttribute(name, b.href as string);
+          a.setAttribute(name, b.getAttribute(name) as string);
           a.href = b.href;
         }
       } else if (
@@ -211,6 +215,48 @@ function diffUpdate(a: Node, b: Node) {
   }
 }
 
+function diffUpdateHead(aHead: Node, bHead: Node) {
+  const aChildren = Array.from(aHead.childNodes);
+  const bChildren = Array.from(bHead.childNodes);
+
+  const aStyleSheets = new Map<string, Element>();
+  const bStyleSheets = new Map<string,Element>();
+
+  for (const a of aChildren) {
+    if (a instanceof HTMLLinkElement && a.rel == "stylesheet") {
+      aStyleSheets.set(a.href, a);
+    }
+  }
+  
+  for (const b of bChildren) {
+    if (b instanceof HTMLLinkElement && b.rel == "stylesheet") {
+      bStyleSheets.set(b.href, b);
+    }
+
+    if (b instanceof Element && b.nodeName == "TITLE" && document.title != b.textContent) {
+      document.title = b.textContent ?? document.title;
+    }
+  }
+
+  const loadedStyleSheets = new Set();
+
+  for (let i = 0; i < document.styleSheets.length; i++) {
+    const sheet = document.styleSheets[i];
+
+    if (!sheet.href) continue;
+
+    loadedStyleSheets.add(sheet.href);
+
+    sheet.disabled = !bStyleSheets.has(sheet.href);
+  }
+
+  for (const [href, b] of bStyleSheets) {
+    if (!loadedStyleSheets.has(href)) {
+      aHead.appendChild(b.cloneNode(true));
+    }
+  }
+}
+
 type HookedListener = Parameters<typeof globalThis["addEventListener"]>;
 const eventCache: Record<string, HookedListener[]> = {};
 
@@ -236,7 +282,8 @@ function useGlobalThisEventHook(href: string) {
 }
 
 export async function move(href: string, pushState = true) {
-  const { document: nextDocument, modules, isReloadRequired } = await fetchDocument(href);
+  const { document: nextDocument, modules, isReloadRequired } =
+    await fetchDocument(href);
 
   if (isReloadRequired) {
     location.href = href;
@@ -248,7 +295,7 @@ export async function move(href: string, pushState = true) {
 
   const modulePromises = modules.map((x) => import(x));
 
-  diffUpdate(document.head, nextDocument.head);
+  diffUpdateHead(document.head, nextDocument.head);
   diffUpdate(document.body, nextDocument.body);
 
   await Promise.all(modulePromises);
@@ -272,7 +319,7 @@ export async function move(href: string, pushState = true) {
 
     controller.signal.addEventListener("abort", () => resolve());
 
-    setTimeout(() => controller.abort(), 500);
+    // setTimeout(() => controller.abort(), 500);
 
     globalThis.addEventListener("load", () => {
       controller.abort();
