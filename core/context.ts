@@ -6,9 +6,9 @@ import { getOption } from "./option.ts";
 import { ArgsType, RemovePrefix } from "../utils/types.ts";
 import { PreBuildScript } from "./PreBuildScript.ts";
 import { AsyncTaskQueue } from "../utils/AsyncTaskQueue.ts";
-import { FileSystem, NativeFileSystemDriver } from "../utils/FileSystem.ts";
+import { FileSystem, NativeFileSystemDriver } from "./features/FileSystem.ts";
 import { DejamuPlugin } from "./plugins/Plugin.ts";
-import { CacheSystemDriver, InMemoryCacheSystem } from "../utils/CacheSystem.ts";
+import { CacheSystemDriver, InMemoryCacheSystem } from "./features/CacheSystem.ts";
 import { PageInfoSystem } from "./features/PageInfoSystem.ts";
 
 export interface IContextFeatures {
