@@ -348,7 +348,7 @@ export function adaptRouter() {
   function handlePreFetch(this: HTMLAnchorElement) {
     const url = new URL(this.href, location.href);
     const extname = url.pathname.match(/(\.[^/.\\]+)$/)?.[1]?.toLowerCase() ?? ".html";
-    console.log(extname)
+    
     if (url.origin == location.origin && extname == ".html") {
       fetchDocument(url.href);
     }
@@ -357,7 +357,7 @@ export function adaptRouter() {
   function handleMove(this: HTMLAnchorElement, ev: Event) {
     const url = new URL(this.href, location.href);
     const extname = url.pathname.match(/(\.[^/.\\]+)$/)?.[1]?.toLowerCase() ?? ".html";
-    console.log(extname)
+    
     if (url.origin == location.origin && extname == ".html") {
       ev.preventDefault();
       atomic(() => move(url.href, location.href != url.href));
