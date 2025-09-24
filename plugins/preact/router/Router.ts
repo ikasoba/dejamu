@@ -308,6 +308,10 @@ export async function move(href: string, pushState = true) {
     }
   }
 
+  if (location.hash != url.hash) {
+    document.getElementById(url.hash.slice(1))?.scrollIntoView();
+  }
+
   if (pushState) {
     history.pushState(null, "", href);
   } else {
