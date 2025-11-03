@@ -19,3 +19,23 @@ export default {
   ],
 } satisfies Config;
 ```
+
+## `MarkdownBuildContext`
+
+Additional information such as relative paths to the Markdown project root is stored in the `MarkdownBuildContext`.
+
+> [!NOTE]
+> Since this is provided via AsyncLocalStorage, be aware that it cannot be retrieved in environments with a different call stack.
+
+```ts
+import { MarkdownExtension, useMarkdownBuildContext } from "../MarkdownPlugin.tsx";
+
+export function MdAssetPlugin(): MarkdownExtension {
+  return {
+    onRender() {
+      const mdContext = useMarkdownBuildContext();
+      // ex: { sourcePath: "./pages/index.md" }
+    }
+  };
+}
+```
