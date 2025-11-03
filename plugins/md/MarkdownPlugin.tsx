@@ -7,6 +7,8 @@ import { Marked, MarkedExtension } from "../../deps/marked.ts";
 import { dynamicImport } from "../../utils/dynamicImport.ts";
 import { encodeBase64 } from "https://deno.land/std@0.203.0/encoding/base64.ts";
 import { DejamuContext } from "../../core/context.ts";
+import { AsyncLocalStorage } from "node:async_hooks";
+import { PreactPluginData } from "../preact/PreactPlugin.tsx";
 
 export type LayoutComponent = FunctionComponent<
   { data: Record<string, any>; children: string; path: string }
@@ -52,6 +54,24 @@ export let marked: Marked;
 interface CachedDocument {
   hash: string;
   result: MarkdownDocument;
+}
+
+export interface MarkdownBuildContext {
+  sourcePath: string;
+}
+
+const mdContextStorage = new AsyncLocalStorage<MarkdownBuildContext>();
+
+export function useMarkdownBuildContext() {
+  const ctx = mdContextStorage.getStore();
+
+  if (ctx == null) {
+    throw new Error(
+      "MarkdownBuildContext is not injected, and this error caused by `dejamu/md`.",
+    );
+  }
+
+  return ctx;
 }
 
 export const MarkdownPlugin = (
@@ -145,6 +165,9 @@ export const MarkdownPlugin = (
                   hash,
                   layoutHash,
                 ],
+                contextInjector<T>(next: () => T) {
+                  return mdContextStorage.run({ sourcePath: args.path }, next);
+                },
                 Page: () => {
                   for (const plugin of plugins) {
                     plugin.onRender?.();
@@ -156,7 +179,7 @@ export const MarkdownPlugin = (
                     </Layout>
                   );
                 },
-              },
+              } satisfies PreactPluginData,
             });
           },
         );
