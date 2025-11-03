@@ -1,6 +1,6 @@
 import "./islands/hooks.tsx";
 
-import { FunctionComponent } from "npm:preact/";
+import { AnyComponent, FunctionComponent } from "npm:preact/";
 import * as path from "../../deps/path.ts";
 import { initializeConstantsForBuildTime } from "../constants.ts";
 
@@ -120,6 +120,21 @@ interface CachedResult {
   result: OnLoadResult;
 }
 
+export interface PreactPluginData {
+  inputs?: unknown[];
+  contextInjector?: <T>(next: () => T) => T;
+  Page: FunctionComponent;
+}
+
+const isPreactPluginData = (val: unknown): val is PreactPluginData =>
+  val != null &&
+  typeof val == "object" &&
+  "Page" in val &&
+  typeof val.Page == "function" &&
+  (!("inputs" in val) || val.inputs == null || Array.isArray(val.inputs)) &&
+  (!("contextInjector" in val) || val.contextInjector == null ||
+    typeof val.contextInjector == "function");
+
 export const PreactPlugin = (): DejamuPlugin => {
   defaultHooks.onResolved = (path, mod) => {
     if (/\.islands\.[tj]sx?$/.test(path)) {
@@ -149,9 +164,16 @@ export const PreactPlugin = (): DejamuPlugin => {
           ) return;
 
           if (
-            !(args.path.match(/\.[jt]sx$/) || (args.namespace == "PreactPlugin" &&
-              typeof args.pluginData?.Page == "function"))
+            !(args.path.match(/\.[jt]sx$/) ||
+              (args.namespace == "PreactPlugin" &&
+                typeof args.pluginData?.Page == "function"))
           ) return;
+
+          const pluginData: PreactPluginData | null =
+            args.namespace == "PreactPlugin" &&
+              isPreactPluginData(args.pluginData)
+              ? args.pluginData
+              : null;
 
           let jsFilePath = (path.join(
             build.initialOptions.outdir ?? "./",
@@ -181,13 +203,11 @@ export const PreactPlugin = (): DejamuPlugin => {
             const cachedRaw = await cache.get(args.path);
             const cached = cachedRaw && JSON.parse(cachedRaw) as CachedResult;
 
-            const inputs = Array.isArray(args.pluginData?.inputs)
-              ? args.pluginData.inputs
-              : [
-                encodeBase64(
-                  await DejamuContext.current.features.fs.getHash(args.path),
-                ),
-              ];
+            const inputs = pluginData?.inputs ? pluginData.inputs : [
+              encodeBase64(
+                await DejamuContext.current.features.fs.getHash(args.path),
+              ),
+            ];
 
             if (
               cached && cached.inputs.length == inputs.length &&
@@ -204,15 +224,17 @@ export const PreactPlugin = (): DejamuPlugin => {
             initializeConstantsForBuildTime(pageDirectory);
 
             const { default: Page }: { default: FunctionComponent } =
-              typeof args.pluginData?.Page == "function"
-                ? { default: await args.pluginData.Page }
+              pluginData?.Page
+                ? { default: pluginData.Page }
                 : await dynamicImport(
                   path.toFileUrl(path.resolve(args.path)).toString(),
                 );
 
             const node = <Page />;
 
-            const body = await renderToStringAsync(node);
+            const pageRenderer = async () => await renderToStringAsync(node);
+
+            const body = await (pluginData?.contextInjector ? pluginData.contextInjector(pageRenderer) : pageRenderer());
 
             const islands = [...getIslands()];
 
