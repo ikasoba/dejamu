@@ -45,3 +45,19 @@ Plugin interface.
 
 - Module: [dejamu/mod.ts](https://github.com/ikasoba/dejamu/blob/main/mod.ts)
 - Location: [dejamu/pluginSystem/Plugin.ts](https://github.com/ikasoba/dejamu/blob/main/pluginSystem/Plugin.ts)
+
+## `asset(loc: string): string`
+
+This hook declares dependent assets.
+
+It should be called by components during the build process.
+
+- If it starts with `/`, it is interpreted as a relative path to the project root.
+
+- Otherwise, it attempts to resolve the reference as a module.
+
+This feature instructs the builder to copy dependent assets and caches them when they represent external assets.
+
+- Module: [dejamu/comptime.ts](https://github.com/ikasoba/dejamu/blob/main/comptime.ts)
+- Location: [dejamu/plugins/asset.ts](https://github.com/ikasoba/dejamu/blob/main/plugins/asset.ts)
+
