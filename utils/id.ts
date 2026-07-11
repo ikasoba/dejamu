@@ -1,3 +1,6 @@
+import { create } from "../deps/xxhash64.ts";
+import { encodeBase64Url } from "../deps/std__encoding.ts";
+
 const charRange = (x: string, y: string) =>
   Array.from(
     { length: y.codePointAt(0)! - x.codePointAt(0)! + 1 },
@@ -21,4 +24,13 @@ export function createIdGenerator(digits = alphabets, prefix?: string) {
   let i = 0;
 
   return () => (prefix ?? "") + num2str(digits, i++);
+}
+
+export async function createHashGenerator() {
+  const xxh = await create();
+  const enc = new TextEncoder();
+  
+  return (src: string) => {
+    return encodeBase64Url(xxh.hash(enc.encode(src)) as Uint8Array);
+  }
 }
