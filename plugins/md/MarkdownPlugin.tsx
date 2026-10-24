@@ -1,11 +1,11 @@
-import { FunctionComponent } from "npm:preact/";
+import { FunctionComponent } from "preact";
 import * as path from "../../deps/path.ts";
 import * as FrontMatter from "../../deps/front_matter.ts";
 import { EmptyLayout } from "./EmptyLayout.tsx";
 import { DejamuPlugin } from "../../core/plugins/Plugin.ts";
 import { Marked, MarkedExtension } from "../../deps/marked.ts";
 import { dynamicImport } from "../../utils/dynamicImport.ts";
-import { encodeBase64 } from "https://deno.land/std@0.203.0/encoding/base64.ts";
+import { encodeBase64 } from "@std/encoding/base64";
 import { DejamuContext } from "../../core/context.ts";
 import { AsyncLocalStorage } from "node:async_hooks";
 import { PreactPluginData } from "../preact/PreactPlugin.tsx";

@@ -1,4 +1,4 @@
-import { ComponentType, hydrate } from "npm:preact";
+import { type ComponentType, hydrate } from "preact";
 import { deserialize } from "./serialize.ts";
 import { unescapeHTML } from "../../../utils/escapeHTML.ts";
 

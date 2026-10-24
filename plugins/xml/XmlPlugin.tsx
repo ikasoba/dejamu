@@ -1,15 +1,15 @@
 import * as path from "../../deps/path.ts";
-import { DejamuPlugin } from "../../core/plugins/Plugin.ts";
+import type { DejamuPlugin } from "../../core/plugins/Plugin.ts";
 import { DejamuContext } from "../../core/context.ts";
-import { CacheStorageDriver } from "../../core/features/CacheSystem.ts";
-import { OnLoadResult } from "../../deps/esbuild.ts";
-import { PreBuildScript } from "../../core/PreBuildScript.ts";
-import { encodeBase64 } from "https://deno.land/std@0.203.0/encoding/base64.ts";
+import type { CacheStorageDriver } from "../../core/features/CacheSystem.ts";
+import type { OnLoadResult } from "../../deps/esbuild.ts";
+import type { PreBuildScript } from "../../core/PreBuildScript.ts";
+import { encodeBase64 } from "@std/encoding/base64";
 import { initializeConstantsForBuildTime } from "../constants.ts";
-import { FunctionComponent } from "npm:preact";
+import type { FunctionComponent } from "preact";
 import { dynamicImport } from "../../utils/dynamicImport.ts";
 import { renderToStringAsync } from "../../deps/preact-render-to-string.ts";
-import { JSX } from "npm:preact/jsx-runtime";
+import type { JSX } from "preact/jsx-runtime";
 
 export function xml(name: string) {
   return name as keyof JSX.IntrinsicElements;
