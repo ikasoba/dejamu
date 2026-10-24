@@ -1,21 +1,21 @@
 import "./islands/hooks.tsx";
 
-import { AnyComponent, FunctionComponent } from "npm:preact/";
+import type { AnyComponent, FunctionComponent } from "preact";
 import * as path from "../../deps/path.ts";
 import { initializeConstantsForBuildTime } from "../constants.ts";
 
 import { getIslands } from "./islands/hooks.tsx";
-import { DejamuPlugin } from "../../core/plugins/Plugin.ts";
+import type { DejamuPlugin } from "../../core/plugins/Plugin.ts";
 import { copyAssets, initAssets } from "../asset.ts";
 import { DejamuContext } from "../../core/context.ts";
 import { renderToStringAsync } from "../../deps/preact-render-to-string.ts";
-import { collectIslands, Island, replaceIsland } from "./islands/islands.ts";
+import { collectIslands, type Island, replaceIsland } from "./islands/islands.ts";
 import { template } from "../render.tsx";
-import { OnLoadResult } from "../../deps/esbuild.ts";
-import { PreBuildScript } from "../../core/PreBuildScript.ts";
+import type { OnLoadResult } from "../../deps/esbuild.ts";
+import type { PreBuildScript } from "../../core/PreBuildScript.ts";
 import { defaultHooks, dynamicImport } from "../../utils/dynamicImport.ts";
-import { encodeBase64 } from "https://deno.land/std@0.203.0/encoding/base64.ts";
-import { CacheStorageDriver } from "../../core/features/CacheSystem.ts";
+import { encodeBase64 } from "@std/encoding/base64";
+import type { CacheStorageDriver } from "../../core/features/CacheSystem.ts";
 
 async function render(
   modulePath: string,

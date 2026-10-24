@@ -1,4 +1,4 @@
-import postcss from "npm:postcss@^8";
+import postcss from "postcss";
 import * as path from "../../deps/path.ts";
 import { DejamuPlugin } from "../../core/plugins/Plugin.ts";
 import { DejamuContext } from "../../core/context.ts";

@@ -1,10 +1,10 @@
 import {
-  ComponentType,
-  Fragment,
+  type ComponentType,
+  type Fragment,
   options as _options,
-  VNode,
-} from "npm:preact";
-import { getIslandsState, Island } from "./islands.ts";
+  type VNode,
+} from "preact";
+import { getIslandsState, type Island } from "./islands.ts";
 import { serialize } from "./serialize.ts";
 import { escapeHTML } from "../../../utils/escapeHTML.ts";
 
