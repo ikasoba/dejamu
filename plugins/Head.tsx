@@ -1,4 +1,4 @@
-import { ComponentChild, ComponentChildren } from "npm:preact/";
+import type { ComponentChild, ComponentChildren } from "preact";
 
 export interface HeadProps {
   children: ComponentChildren;

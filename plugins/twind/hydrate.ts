@@ -1,5 +1,5 @@
-import { cssom, setup, tw, TwindConfig } from "@twind/core";
-import { options } from "npm:preact";
+import { cssom, setup, tw, type TwindConfig } from "@twind/core";
+import { options } from "preact";
 
 let isSetupped = false;
 let isHookAdapted = false;

@@ -1,5 +1,5 @@
-import hljs from "npm:highlight.js@11.10.0";
-import { MarkdownExtension } from "../MarkdownPlugin.tsx";
+import hljs from "highlight.js";
+import type { MarkdownExtension } from "../MarkdownPlugin.tsx";
 import { appendHead } from "../../Head.tsx";
 import { asset } from "../../asset.ts";
 

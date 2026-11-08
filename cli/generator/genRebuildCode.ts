@@ -1,5 +1,4 @@
-
-import { Source } from "./Source.ts";
+import type { Source } from "./Source.ts";
 
 export const genRebuildCode = (source: Source, ctxName: string, paths?: string[]) => {
   source.header += `import { rebuild } from "dejamu/cli/lib/rebuild.ts";`;

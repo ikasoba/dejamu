@@ -1,7 +1,7 @@
 import { DejamuContext } from "../core/context.ts";
 import * as path from "../deps/path.ts";
 import { createHashGenerator } from "../utils/id.ts";
-import { Awaitable } from "../utils/types.ts";
+import type { Awaitable } from "../utils/types.ts";
 import { cache } from "https://deno.land/x/cache/mod.ts";
 
 let assetPair: Map<string, string>;

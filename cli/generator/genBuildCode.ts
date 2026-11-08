@@ -1,4 +1,4 @@
-import { Source } from "./Source.ts";
+import type { Source } from "./Source.ts";
 
 export const genBuildCode = (source: Source, ctxName: string, paths?: string[]) => {
   source.header += `import { build } from "dejamu/cli/lib/build.ts";`;

@@ -1,4 +1,4 @@
-import { Source } from "./Source.ts";
+import type { Source } from "./Source.ts";
 
 export const genServeCode = (source: Source, port: number) => {
   source.header += `import { serve } from "dejamu/cli/lib/serve.ts";`;

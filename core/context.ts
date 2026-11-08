@@ -1,14 +1,14 @@
-import { BuildOptions, Plugin as EsbuildPlugin } from "../deps/esbuild.ts";
+import type { BuildOptions, Plugin as EsbuildPlugin } from "../deps/esbuild.ts";
 import * as esbuild from "../deps/esbuild.ts";
-import { DejamuPluginBase } from "../core/plugins/DejamuPluginBase.ts";
-import { Config } from "./Config.ts";
+import type { DejamuPluginBase } from "../core/plugins/DejamuPluginBase.ts";
+import type { Config } from "./Config.ts";
 import { getOption } from "./option.ts";
-import { ArgsType, RemovePrefix } from "../utils/types.ts";
-import { PreBuildScript } from "./PreBuildScript.ts";
+import type { ArgsType, RemovePrefix } from "../utils/types.ts";
+import type { PreBuildScript } from "./PreBuildScript.ts";
 import { AsyncTaskQueue } from "../utils/AsyncTaskQueue.ts";
 import { FileSystem, NativeFileSystemDriver } from "./features/FileSystem.ts";
-import { DejamuPlugin } from "./plugins/Plugin.ts";
-import { CacheSystemDriver, InMemoryCacheSystem } from "./features/CacheSystem.ts";
+import type { DejamuPlugin } from "./plugins/Plugin.ts";
+import { type CacheSystemDriver, InMemoryCacheSystem } from "./features/CacheSystem.ts";
 import { PageInfoSystem } from "./features/PageInfoSystem.ts";
 
 export interface IContextFeatures {
@@ -116,8 +116,8 @@ export class DejamuContext {
     await this.addPlugins(...this.config.plugins);
 
     await (await this.getContext()).dispose();
-    this._esbuildOption = undefined;
-    this._context = undefined;
+    delete this._esbuildOption;
+    delete this._context;
   }
 
   async build() {

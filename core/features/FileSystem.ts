@@ -2,6 +2,7 @@ import { concat } from "../../deps/bytes.ts";
 import { dirname, join, resolve } from "../../deps/path.ts";
 import { create } from "../../deps/xxhash64.ts";
 import { toArrayBuffer } from "../../deps/streams.ts";
+import { Deno } from "../../deno/node.ts";
 
 const xxh = await create();
 
@@ -22,11 +23,11 @@ export class NativeFileSystemDriver implements FileSystemDriver {
       }
     }
   }
-  
+
   getHashable(absolutePath: string): Promise<ReadableStream<Uint8Array>> {
     return this.openReadable(absolutePath);
   }
-  
+
   async openReadable(absolutePath: string) {
     const file = await Deno.open(absolutePath);
 
@@ -42,13 +43,13 @@ export class NativeFileSystemDriver implements FileSystemDriver {
 }
 
 export class FileSystem {
-  constructor(private _driver: FileSystemDriver) {}
+  constructor(private _driver: FileSystemDriver) { }
 
   get driver(): Readonly<FileSystemDriver> {
     return this._driver;
   }
 
-  set driver(newDriver:FileSystemDriver) {
+  set driver(newDriver: FileSystemDriver) {
     this._driver = newDriver;
   }
 
@@ -70,25 +71,34 @@ export class FileSystem {
     const reader = stream.getReader();
 
     const bytes = [];
-    
+
     while (true) {
       const res = await reader.read();
       if (res.done) break;
 
       bytes.push(res.value);
     }
-    
-    return concat(...bytes);
+
+    return concat(bytes);
   }
-  
+
   async readTextFile(path: string): Promise<string> {
     const byteStream = await this.openReadable(path);
-    const textStream = byteStream.pipeThrough(new TextDecoderStream());
+    const tr = new TransformStream<Uint8Array, ArrayBuffer>({
+      transform(a, b) {
+        b.enqueue(new Uint8Array(a).buffer);
+      }
+    });
+
+    const textStream =
+      byteStream
+        .pipeThrough(tr)
+        .pipeThrough(new TextDecoderStream());
 
     const reader = textStream.getReader();
 
     const chunks = [];
-    
+
     while (true) {
       const res = await reader.read();
       if (res.done) break;
@@ -98,7 +108,7 @@ export class FileSystem {
 
     return chunks.join("");
   }
-  
+
   writeFile(path: string, source: Uint8Array) {
     return this._driver.writeFile(resolve(path), source);
   }

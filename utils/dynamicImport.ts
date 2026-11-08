@@ -3,7 +3,7 @@ import { fromFileUrl, toFileUrl, relative, resolve } from "../deps/path.ts";
 import {
   denoResolverPlugin,
 } from "../deps/esbuild_deno_loader.ts";
-import { encodeBase64 } from "https://deno.land/std@0.203.0/encoding/base64.ts";
+import { encodeBase64 } from "@std/encoding/base64";
 import { DejamuContext } from "../core/context.ts";
 
 export const ModuleReloader = new EventTarget();

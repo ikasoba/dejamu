@@ -1,8 +1,9 @@
 import { DejamuContext } from "../../core/context.ts";
-import { dirname, resolve, toFileUrl } from "../../deps/path.ts";
-import { DejamuPlugin } from "../../core/plugins/Plugin.ts";
-import { FileSystemDriver } from "../../core/features/FileSystem.ts";
-import { Awaitable } from "../../utils/types.ts";
+import { resolve } from "../../deps/path.ts";
+import type { DejamuPlugin } from "../../core/plugins/Plugin.ts";
+import type { FileSystemDriver } from "../../core/features/FileSystem.ts";
+import type { Awaitable } from "../../utils/types.ts";
+import { Deno } from "../../deno/node.ts";
 
 export interface VirtualFile {
   path: string;
@@ -40,7 +41,7 @@ export class VirtualFileSystemDriver implements FileSystemDriver {
     const virtual = this.files.get(absolutePath);
 
     if (!virtual) {
-      if (!this.target) throw new Deno.errors.NotFound();
+      if (!this.target) throw new Error("Not Found");
 
       return this.target.openReadable(absolutePath);
     }
@@ -58,7 +59,7 @@ export class VirtualFileSystemDriver implements FileSystemDriver {
   ): Promise<ReadableStream<Uint8Array>> {
     const virtual = this.files.get(absolutePath);
     if (!virtual) {
-      if (!this.target) throw new Deno.errors.NotFound();
+      if (!this.target) throw new Error("Not Found");
 
       return this.target.openReadable(absolutePath);
     }
@@ -73,7 +74,7 @@ export class VirtualFileSystemDriver implements FileSystemDriver {
 
   writeFile(absolutePath: string, source: Uint8Array): Promise<void> {
     if (!this.target || this.files.has(absolutePath)) {
-      throw new Deno.errors.PermissionDenied();
+      throw Error("Permission Denied");
     }
 
     return this.target.writeFile(absolutePath, source);

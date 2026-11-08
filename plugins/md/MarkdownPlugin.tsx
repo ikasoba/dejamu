@@ -1,14 +1,15 @@
-import { FunctionComponent } from "npm:preact/";
+import type { FunctionComponent } from "preact";
 import * as path from "../../deps/path.ts";
 import * as FrontMatter from "../../deps/front_matter.ts";
 import { EmptyLayout } from "./EmptyLayout.tsx";
-import { DejamuPlugin } from "../../core/plugins/Plugin.ts";
-import { Marked, MarkedExtension } from "../../deps/marked.ts";
+import type { DejamuPlugin } from "../../core/plugins/Plugin.ts";
+import { Marked, type MarkedExtension } from "../../deps/marked.ts";
 import { dynamicImport } from "../../utils/dynamicImport.ts";
-import { encodeBase64 } from "https://deno.land/std@0.203.0/encoding/base64.ts";
+import { encodeBase64 } from "@std/encoding/base64";
 import { DejamuContext } from "../../core/context.ts";
 import { AsyncLocalStorage } from "node:async_hooks";
-import { PreactPluginData } from "../preact/PreactPlugin.tsx";
+import type { PreactPluginData } from "../preact/PreactPlugin.tsx";
+import { Deno } from "../../deno/node.ts";
 
 export type LayoutComponent = FunctionComponent<
   { data: Record<string, any>; children: string; path: string }
@@ -121,8 +122,8 @@ export const MarkdownPlugin = (
 
             const htmlFilePath = path.join(
               "./",
-              path.relative(Deno.cwd(), path.dirname(args.path)).split(path.SEP)
-                .slice(1).join(path.SEP),
+              path.relative(Deno.cwd(), path.dirname(args.path)).split(path.SEPARATOR)
+                .slice(1).join(path.SEPARATOR),
               path.basename(args.path, path.extname(args.path)) + ".html",
             ).replaceAll("\\", "/");
 

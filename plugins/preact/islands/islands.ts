@@ -1,4 +1,4 @@
-import { ComponentType } from "npm:preact";
+import type { ComponentType } from "preact";
 import * as fs from "../../../deps/fs.ts";
 import * as path from "../../../deps/path.ts";
 import { createIdGenerator } from "../../../utils/id.ts";
