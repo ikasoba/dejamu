@@ -1,6 +1,6 @@
-import { css, extract, setup, tw, TwindConfig } from "@twind/core";
+import { css, extract, setup, tw, type TwindConfig } from "@twind/core";
 import * as path from "../../deps/path.ts";
-import { DejamuPlugin } from "../../core/plugins/Plugin.ts";
+import type { DejamuPlugin } from "../../core/plugins/Plugin.ts";
 import { appendHead } from "../Head.tsx";
 import { glob } from "../../utils/glob.ts";
 import { DejamuContext } from "../../core/context.ts";
@@ -34,7 +34,7 @@ export function TwindPlugin(
         hrKey += 1;
 
         configPath = await glob(configPathPattern).then(
-          (x) => path.toFileUrl(x[0]).toString(),
+          (x) => path.toFileUrl(x[0]!).toString(),
         );
 
         config = (await dynamicImport(

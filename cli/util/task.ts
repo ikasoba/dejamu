@@ -1,4 +1,4 @@
-import { Source } from "../generator/Source.ts";
+import type { Source } from "../generator/Source.ts";
 import { genBuildCode } from "../generator/genBuildCode.ts";
 import { genRebuildCode } from "../generator/genRebuildCode.ts";
 import { genContext } from "../generator/genContext.ts";

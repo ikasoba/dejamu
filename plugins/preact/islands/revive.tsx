@@ -37,6 +37,8 @@ export function revive(
     if (child instanceof Comment) {
       if (child.textContent?.startsWith("djm-ph")) {
         const [_, id, _prop] = child.textContent.split(":", 3);
+        if (id == null || _prop == null) throw new Error("Invalid hydration detail");
+        
         if (!(id in islands)) {
           continue;
         }
@@ -66,11 +68,14 @@ export function revive(
         continue;
       } else if (child.textContent?.startsWith("/djm-ph")) {
         const [_, id] = child.textContent.split(":", 2);
+        if (id == null ) throw new Error("Invalid hydration detail");
         if (!(id in islands)) {
           continue;
         }
 
         const componentPromise = islands[id];
+        if (!componentPromise) continue;
+        
         let info: HydrationInfo;
 
         const parent = child.parentNode;

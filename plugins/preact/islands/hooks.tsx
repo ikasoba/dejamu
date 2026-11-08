@@ -1,6 +1,6 @@
 import {
   type ComponentType,
-  type Fragment,
+  Fragment,
   options as _options,
   type VNode,
 } from "preact";

@@ -10,6 +10,7 @@ import type { FunctionComponent } from "preact";
 import { dynamicImport } from "../../utils/dynamicImport.ts";
 import { renderToStringAsync } from "../../deps/preact-render-to-string.ts";
 import type { JSX } from "preact/jsx-runtime";
+import { Deno } from "../../deno/node.ts";
 
 export function xml(name: string) {
   return name as keyof JSX.IntrinsicElements;
@@ -70,14 +71,14 @@ export const XmlPlugin = (): DejamuPlugin => {
 
           const xmlFilePath = path.join(
             build.initialOptions.outdir ?? "./",
-            path.relative(Deno.cwd(), path.dirname(args.path)).split(path.SEP)
-              .slice(1).join(path.SEP),
+            path.relative(Deno.cwd(), path.dirname(args.path)).split(path.SEPARATOR)
+              .slice(1).join(path.SEPARATOR),
             path.basename(args.path, ".xml" + path.extname(args.path)) + ".xml",
           ).replaceAll("\\", "/");
 
           const pageDirectory = path.join(
-            path.relative(Deno.cwd(), path.dirname(args.path)).split(path.SEP)
-              .slice(1).join(path.SEP),
+            path.relative(Deno.cwd(), path.dirname(args.path)).split(path.SEPARATOR)
+              .slice(1).join(path.SEPARATOR),
           ).replaceAll("\\", "/");
 
           return await DejamuContext.current.tasks.run(async () => {
