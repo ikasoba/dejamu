@@ -1,7 +1,7 @@
 export interface PageInfo {
-  title?: string;
-  description?: string;
+  title?: string | undefined;
+  description?: string | undefined;
   sourcePath: string;
-  outputPath?: string;
-  timestamp?: Date;
+  outputPath?: string | undefined;
+  timestamp?: Date | undefined;
 }

@@ -1,4 +1,5 @@
 import { DejamuContext } from "../core/context.ts";
+import { Deno } from "../deno/node.ts";
 import { globToRegExp, normalizeGlob, relative } from "../deps/path.ts";
 
 export const asyncIterableIteratorToArray = async <T>(

@@ -1,4 +1,4 @@
-import { Source } from "./Source.ts";
+import type { Source } from "./Source.ts";
 
 export const genContext = (source: Source, name: string) => {
   source.header += 'import { DejamuContext } from "dejamu/core/context.ts";';

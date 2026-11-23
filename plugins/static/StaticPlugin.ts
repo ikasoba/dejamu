@@ -1,5 +1,5 @@
 import { DejamuContext } from "../../core/context.ts";
-import { DejamuPlugin } from "../../core/plugins/Plugin.ts";
+import type { DejamuPlugin } from "../../core/plugins/Plugin.ts";
 import { join, relative } from "../../deps/path.ts";
 import { glob } from "../../utils/glob.ts";
 

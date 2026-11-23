@@ -1,6 +1,6 @@
 import { escapeHTML } from "../../../utils/escapeHTML.ts";
 import { asset } from "../../asset.ts";
-import { MarkdownExtension, useMarkdownBuildContext } from "../MarkdownPlugin.tsx";
+import { type MarkdownExtension, useMarkdownBuildContext } from "../MarkdownPlugin.tsx";
 import * as path from "../../../deps/path.ts";
 
 export function MdAssetPlugin(): MarkdownExtension {

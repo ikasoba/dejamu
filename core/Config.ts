@@ -1,4 +1,4 @@
-import { DejamuPlugin } from "../core/plugins/Plugin.ts";
+import type { DejamuPlugin } from "../core/plugins/Plugin.ts";
 
 export interface Config {
   /** glob patterns */

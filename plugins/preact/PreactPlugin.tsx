@@ -1,21 +1,22 @@
 import "./islands/hooks.tsx";
 
-import { AnyComponent, FunctionComponent } from "npm:preact/";
+import type { AnyComponent, FunctionComponent } from "preact";
 import * as path from "../../deps/path.ts";
 import { initializeConstantsForBuildTime } from "../constants.ts";
 
 import { getIslands } from "./islands/hooks.tsx";
-import { DejamuPlugin } from "../../core/plugins/Plugin.ts";
+import type { DejamuPlugin } from "../../core/plugins/Plugin.ts";
 import { copyAssets, initAssets } from "../asset.ts";
 import { DejamuContext } from "../../core/context.ts";
 import { renderToStringAsync } from "../../deps/preact-render-to-string.ts";
-import { collectIslands, Island, replaceIsland } from "./islands/islands.ts";
+import { collectIslands, type Island, replaceIsland } from "./islands/islands.ts";
 import { template } from "../render.tsx";
-import { OnLoadResult } from "../../deps/esbuild.ts";
-import { PreBuildScript } from "../../core/PreBuildScript.ts";
+import type { OnLoadResult } from "../../deps/esbuild.ts";
+import type { PreBuildScript } from "../../core/PreBuildScript.ts";
 import { defaultHooks, dynamicImport } from "../../utils/dynamicImport.ts";
-import { encodeBase64 } from "https://deno.land/std@0.203.0/encoding/base64.ts";
-import { CacheStorageDriver } from "../../core/features/CacheSystem.ts";
+import { encodeBase64 } from "@std/encoding/base64";
+import type { CacheStorageDriver } from "../../core/features/CacheSystem.ts";
+import { Deno } from "../../deno/node.ts";
 
 async function render(
   modulePath: string,
@@ -186,14 +187,14 @@ export const PreactPlugin = (): DejamuPlugin => {
 
           const htmlFilePath = path.join(
             build.initialOptions.outdir ?? "./",
-            path.relative(Deno.cwd(), path.dirname(args.path)).split(path.SEP)
-              .slice(1).join(path.SEP),
+            path.relative(Deno.cwd(), path.dirname(args.path)).split(path.SEPARATOR)
+              .slice(1).join(path.SEPARATOR),
             path.basename(args.path, path.extname(args.path)) + ".html",
           ).replaceAll("\\", "/");
 
           const pageDirectory = path.join(
-            path.relative(Deno.cwd(), path.dirname(args.path)).split(path.SEP)
-              .slice(1).join(path.SEP),
+            path.relative(Deno.cwd(), path.dirname(args.path)).split(path.SEPARATOR)
+              .slice(1).join(path.SEPARATOR),
           ).replaceAll("\\", "/");
 
           jsFilePath = path.relative(path.dirname(htmlFilePath), jsFilePath)
@@ -261,7 +262,7 @@ export const PreactPlugin = (): DejamuPlugin => {
                       type="application/json"
                       dangerouslySetInnerHTML={{
                         __html: JSON.stringify(
-                          res.metafile.inputs[rawJsFilePath].imports.filter((
+                          res.metafile.inputs[rawJsFilePath]!.imports.filter((
                             x,
                           ) => x.kind == "import-statement").map((x) =>
                             resolveFilePath(x.path)

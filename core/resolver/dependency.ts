@@ -1,6 +1,6 @@
-import { Plugin as EsbuildPlugin } from "../../deps/esbuild.ts";
+import type { Plugin as EsbuildPlugin } from "../../deps/esbuild.ts";
 import * as denoResolver from "../../deps/deno_module_resolver.ts";
-import { ResolverCache } from "./cache.ts";
+import type { ResolverCache } from "./cache.ts";
 
 export function dependencyResolver(cache: ResolverCache): EsbuildPlugin {
   return {
